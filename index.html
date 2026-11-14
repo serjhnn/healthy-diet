@@ -173,7 +173,6 @@
   button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-height: 40px; }
   @media (hover: hover) { button:hover { border-color: var(--accent); } }
   button:focus:not(:focus-visible) { outline: none; }
-  .controls { display: flex; justify-content: center; margin: 14px 0 4px; }
   /* Diet switch: segmented control with a sliding highlight */
   .seg {
     position: relative; display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); width: 100%; max-width: 360px;
@@ -296,9 +295,11 @@
   .tip-card p { margin: 8px 0 0; }
 
   /* Shopping */
-  .shop-mode { display: flex; margin-top: 10px; }
+  .sec-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .sec-tools .seg { width: auto; flex: 0 1 auto; }
+  .seg-small label span .ic { width: 16px; height: 16px; vertical-align: 0; }
   .seg-small { max-width: 280px; }
-  .seg-small label span { min-height: 32px; font-size: .85rem; }
+  .seg-small label span { min-height: 32px; font-size: .85rem; padding: 0 12px; }
   .shop-items { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
   .shop-item {
     width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: transparent;
@@ -450,14 +451,6 @@
    </div>
   </nav>
 
-  <div class="controls">
-    <div class="seg" id="pref" role="radiogroup" aria-label="Diet" style="--n:2">
-      <span class="seg-thumb" aria-hidden="true"></span>
-      <label><input type="radio" name="pref" value="all"><span><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg> Everything</span></label>
-      <label><input type="radio" name="pref" value="veg"><span><svg class="ic" aria-hidden="true"><use href="#i-leaf"/></svg> Vegetarian</span></label>
-    </div>
-  </div>
-
   <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
     <button role="tab" data-tab="menu" id="tab-btn-menu" aria-controls="tab-menu"><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg><span>Menu</span></button>
     <button role="tab" data-tab="week" id="tab-btn-week" aria-controls="tab-week"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg><span>Week</span></button>
@@ -467,19 +460,38 @@
 
   <section class="panel" id="tab-menu" role="tabpanel" aria-labelledby="tab-btn-menu">
     <div class="sec-head"><h2>Menu</h2><span class="sec-range" id="menuDate"></span></div>
+    <div class="sec-tools">
+      <div class="seg seg-small diet-seg" role="radiogroup" aria-label="Diet" style="--n:2">
+        <span class="seg-thumb" aria-hidden="true"></span>
+        <label><input type="radio" name="pref-menu" value="all" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg> Everything</span></label>
+        <label><input type="radio" name="pref-menu" value="veg" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-leaf"/></svg> Vegetarian</span></label>
+      </div>
+    </div>
     <div class="sec-stats" id="summary"></div>
     <div class="meals" id="meals"></div>
   </section>
 
   <section class="panel" id="tab-week" role="tabpanel" aria-labelledby="tab-btn-week" hidden>
     <div class="sec-head"><h2>Week at a glance</h2><span class="sec-range" id="weekRange"></span></div>
+    <div class="sec-tools">
+      <div class="seg seg-small diet-seg" role="radiogroup" aria-label="Diet" style="--n:2">
+        <span class="seg-thumb" aria-hidden="true"></span>
+        <label><input type="radio" name="pref-week" value="all" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg> Everything</span></label>
+        <label><input type="radio" name="pref-week" value="veg" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-leaf"/></svg> Vegetarian</span></label>
+      </div>
+    </div>
     <div class="sec-stats" id="weekStats"></div>
     <div class="card-grid" id="week"></div>
   </section>
 
   <section class="panel" id="tab-shop" role="tabpanel" aria-labelledby="tab-btn-shop" hidden>
     <div class="sec-head"><h2>Shopping list</h2><span class="sec-range" id="shopRange"></span></div>
-    <div class="shop-mode">
+    <div class="sec-tools">
+      <div class="seg seg-small diet-seg" role="radiogroup" aria-label="Diet" style="--n:2">
+        <span class="seg-thumb" aria-hidden="true"></span>
+        <label><input type="radio" name="pref-shop" value="all" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg> Everything</span></label>
+        <label><input type="radio" name="pref-shop" value="veg" data-diet><span><svg class="ic" aria-hidden="true"><use href="#i-leaf"/></svg> Vegetarian</span></label>
+      </div>
       <div class="seg seg-small" id="shopMode" role="radiogroup" aria-label="Shopping list range" style="--n:2">
         <span class="seg-thumb" aria-hidden="true"></span>
         <label><input type="radio" name="shopMode" value="day"><span>This day</span></label>
@@ -796,7 +808,7 @@ function render() {
   const todayKey = isoDate(new Date());
 
   renderNav(key, todayKey);
-  setSeg($("pref"), pref);
+  document.querySelectorAll(".diet-seg").forEach(el => setSeg(el, pref));
 
   const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
   const eaten = SLOTS.filter(s => done[s.key]).length;
@@ -1216,8 +1228,9 @@ $("themeSeg").addEventListener("change", e => {
   applyTheme();
 });
 applyTheme();
-$("pref").addEventListener("change", e => {
-  if (e.target.name !== "pref") return;
+// Diet switch: one copy in each tab it affects; all stay in sync.
+document.addEventListener("change", e => {
+  if (!e.target.hasAttribute || !e.target.hasAttribute("data-diet")) return;
   pref = e.target.value; store.set("pref", pref); render();
 });
 document.addEventListener("keydown", e => {

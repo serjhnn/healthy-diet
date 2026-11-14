@@ -2,7 +2,7 @@
 
 A single static page (`index.html`) that tells you what to eat today.
 
-The page has a day bar (date, week row, ‹ › buttons) and an Everything / Vegetarian switch at the top. Below them are four tabs. On phones the tabs sit in a bar at the bottom of the screen; on a computer they're a pill switch under the header. Every tab follows the selected day and diet, and the page remembers the last tab you used.
+The page has a day bar at the top (date, week row, ‹ › buttons) that shrinks as you scroll. Below it are four tabs. Menu, Week and Shopping each have an Everything / Vegetarian switch; they stay in sync. On phones the tabs sit in a bar at the bottom of the screen; on a computer they're a pill switch under the header. Every tab follows the selected day and diet, and the page remembers the last tab you used.
 
 - **Menu**: 5 meals a day (breakfast, morning snack, lunch, afternoon snack, dinner). Each card shows the time, calories, protein, a "Veggie" tag where it applies, the ingredients, and the cooking steps (tap "How to make"). On today, the next meal you haven't eaten is marked **Up next**. Tap the round check to mark a meal eaten
 - **Week**: a card per day with its calories, an eaten-meals ring and the five meals, plus week totals. Tap a card to open that day's menu. On phones, past days shrink to one line
