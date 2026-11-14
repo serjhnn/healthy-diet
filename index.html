@@ -57,8 +57,58 @@
   .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
   header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
   h1 { margin: 0; font-size: 1.6rem; }
-  h1 small { display: block; font-size: .95rem; font-weight: 400; color: var(--muted); }
-  .nav { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* ----- Day navigation ----- */
+  .daynav {
+    position: sticky; top: 0; z-index: 10;
+    margin: 12px -16px 0; padding: 10px 16px 10px;
+    background: var(--bg); border-bottom: 1px solid transparent;
+  }
+  .daynav.stuck { border-bottom-color: var(--border); box-shadow: 0 6px 12px -10px rgba(0,0,0,.35); }
+  .daynav-head { display: flex; align-items: center; gap: 8px; }
+  .arrow { font-size: 1.5rem; line-height: 1; width: 44px; height: 44px; padding: 0; flex: none; border-radius: 50%; }
+  .datepick {
+    position: relative; flex: 1; min-width: 0; text-align: center; cursor: pointer;
+    padding: 4px 8px; border-radius: 10px;
+  }
+  .datepick:hover { background: var(--accent-soft); }
+  .date-main { display: block; font-weight: 700; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .date-main::after { content: " ▾"; font-size: .7em; color: var(--muted); }
+  .date-rel { display: block; font-size: .82rem; color: var(--accent); font-weight: 600; min-height: 1.2em; }
+  .datepick input {
+    position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    border: 0; padding: 0; margin: 0; font-size: 16px; /* 16px stops iOS zoom */
+  }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+  .day {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    padding: 6px 0 7px; border-radius: 12px; min-height: 0; position: relative;
+  }
+  .day .wd { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .day .dn { font-size: 1.05rem; font-weight: 700; }
+  .day .bar { width: 60%; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; margin-top: 2px; }
+  .day .bar i { display: block; height: 100%; background: var(--accent); }
+  .day.is-today .dn { color: var(--accent); }
+  .day.is-today::before {
+    content: ""; position: absolute; top: 3px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  }
+  .day.sel { background: var(--accent); border-color: var(--accent); }
+  .day.sel .wd, .day.sel .dn { color: var(--bg); }
+  .day.sel .bar { background: rgba(255,255,255,.35); }
+  .day.sel .bar i { background: var(--bg); }
+  .day.sel.is-today::before { background: var(--bg); }
+  .back-row { display: flex; justify-content: center; margin-top: 8px; }
+  .back-row[hidden] { display: none; }
+  .chip {
+    font-size: .85rem; min-height: 32px; padding: 4px 14px; border-radius: 999px;
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600;
+  }
+  #theme { font-size: .85rem; min-height: 36px; padding: 4px 10px; }
+  .meals.slide-l { animation: slideL .22s ease-out; }
+  .meals.slide-r { animation: slideR .22s ease-out; }
+  @keyframes slideL { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  @keyframes slideR { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .meals.slide-l, .meals.slide-r { animation: none; } }
   button, select {
     font: inherit; color: var(--text); background: var(--card);
     border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
@@ -128,14 +178,23 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>🥗 Today's Menu <small id="dateLabel"></small></h1>
-    <div class="nav">
-      <button id="prev" aria-label="Previous day">←</button>
-      <button id="today">Today</button>
-      <button id="next" aria-label="Next day">→</button>
-      <button id="theme" aria-label="Change theme"></button>
-    </div>
+    <h1>🥗 <span id="title">Today's Menu</span></h1>
+    <button id="theme" aria-label="Change theme"></button>
   </header>
+
+  <nav class="daynav" aria-label="Choose a day">
+    <div class="daynav-head">
+      <button id="prev" class="arrow" aria-label="Previous day">‹</button>
+      <label class="datepick" title="Pick a date">
+        <span class="date-main" id="dateLabel"></span>
+        <span class="date-rel" id="rel"></span>
+        <input type="date" id="datePicker" aria-label="Pick a date">
+      </label>
+      <button id="next" class="arrow" aria-label="Next day">›</button>
+    </div>
+    <div class="days" id="days" role="tablist"></div>
+    <div class="back-row" id="backRow" hidden><button id="today" class="chip">↩ Back to today</button></div>
+  </nav>
 
   <div class="controls">
     <label>Diet:
@@ -160,7 +219,7 @@
     <ul class="shop" id="shop"></ul>
   </details>
 
-  <h2>This week</h2>
+  <h2>Week at a glance</h2>
   <div class="table-wrap"><table id="week"></table></div>
 
   <footer>
@@ -427,7 +486,14 @@ const store = {
 };
 
 // ---------- Rendering ----------
-let current = new Date();
+// Start on the day in the URL (#2026-11-20) if there is one, otherwise today.
+function parseIso(str) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || "");
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return isNaN(d) ? null : d;
+}
+let current = parseIso(location.hash.slice(1)) || new Date();
 let pref = store.get("pref", "all");
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -438,8 +504,7 @@ function render() {
   const done = store.get("done:" + key, {});
   const todayKey = isoDate(new Date());
 
-  $("dateLabel").textContent = current.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" })
-    + (key === todayKey ? " · today" : "");
+  renderNav(key, todayKey);
   $("pref").value = pref;
 
   const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
@@ -496,17 +561,113 @@ function render() {
   }
   $("week").innerHTML = rows;
   $("week").querySelectorAll("tr[data-date]").forEach(tr => tr.addEventListener("click", () => {
-    const [y, m, d] = tr.dataset.date.split("-").map(Number);
-    current = new Date(y, m - 1, d);
-    render();
+    go(parseIso(tr.dataset.date));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }));
 }
 
-function shift(n) { current = new Date(current); current.setDate(current.getDate() + n); render(); }
+// ---------- Day navigation ----------
+function relativeLabel(diff) {
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff === -1) return "Yesterday";
+  return diff > 0 ? `In ${diff} days` : `${-diff} days ago`;
+}
+function renderNav(key, todayKey) {
+  const diff = dayNumber(current) - dayNumber(new Date());
+  const sameYear = current.getFullYear() === new Date().getFullYear();
+  $("dateLabel").textContent = current.toLocaleDateString(undefined,
+    { weekday: "long", day: "numeric", month: window.innerWidth < 400 ? "short" : "long", ...(sameYear ? {} : { year: "numeric" }) });
+  $("rel").textContent = relativeLabel(diff);
+  $("title").textContent = diff === 0 ? "Today's Menu" : diff === 1 ? "Tomorrow's Menu" : diff === -1 ? "Yesterday's Menu" : "Menu";
+  $("datePicker").value = key;
+  $("backRow").hidden = diff === 0;
+
+  // Week strip (Mon–Sun around the selected day)
+  const monday = new Date(current);
+  monday.setDate(current.getDate() - ((current.getDay() + 6) % 7));
+  let html = "";
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const k = isoDate(d);
+    const done = store.get("done:" + k, {});
+    const n = SLOTS.filter(s => done[s.key]).length;
+    const cls = ["day", k === key ? "sel" : "", k === todayKey ? "is-today" : ""].join(" ");
+    const full = d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+    html += `<button class="${cls}" data-date="${k}" role="tab" aria-selected="${k === key}"
+      aria-label="${full}${k === todayKey ? " (today)" : ""}, ${n} of ${SLOTS.length} meals eaten">
+      <span class="wd">${d.toLocaleDateString(undefined, { weekday: "short" })}</span>
+      <span class="dn">${d.getDate()}</span>
+      <span class="bar"><i style="width:${(n / SLOTS.length) * 100}%"></i></span>
+    </button>`;
+  }
+  $("days").innerHTML = html;
+
+  // Keep the URL in sync so a day can be bookmarked; today stays a clean URL.
+  try {
+    const url = location.pathname + location.search + (key === todayKey ? "" : "#" + key);
+    if (url !== location.pathname + location.search + location.hash) history.replaceState(null, "", url);
+  } catch (e) {}
+}
+
+let lastTodayKey = isoDate(new Date());
+function go(date, dir) {
+  const before = dayNumber(current);
+  current = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  render();
+  const delta = dir || Math.sign(dayNumber(current) - before);
+  const meals = $("meals");
+  meals.classList.remove("slide-l", "slide-r");
+  if (delta) { void meals.offsetWidth; meals.classList.add(delta > 0 ? "slide-l" : "slide-r"); }
+}
+function shift(n) { const d = new Date(current); d.setDate(d.getDate() + n); go(d, n); }
 $("prev").onclick = () => shift(-1);
 $("next").onclick = () => shift(1);
-$("today").onclick = () => { current = new Date(); render(); };
+$("today").onclick = () => go(new Date());
+$("days").addEventListener("click", e => {
+  const b = e.target.closest("button[data-date]");
+  if (b) go(parseIso(b.dataset.date));
+});
+$("datePicker").addEventListener("change", e => { const d = parseIso(e.target.value); if (d) go(d); });
+// Desktop browsers: open the native calendar on click where supported.
+$("datePicker").addEventListener("click", e => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} });
+
+// Swipe left/right on the meals to change day.
+(() => {
+  let x0 = null, y0 = 0, t0 = 0;
+  const area = $("meals");
+  area.addEventListener("touchstart", e => {
+    if (e.touches.length !== 1) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  area.addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - t0 < 800) shift(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
+
+// Show a divider under the day bar once it sticks to the top.
+window.addEventListener("scroll", () => {
+  const nav = document.querySelector(".daynav");
+  nav.classList.toggle("stuck", nav.getBoundingClientRect().top <= 0 && window.scrollY > 0);
+}, { passive: true });
+
+// If the page was left open on "today", roll over to the new day after midnight.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const nowKey = isoDate(new Date());
+  if (nowKey !== lastTodayKey) {
+    if (isoDate(current) === lastTodayKey) current = new Date();
+    lastTodayKey = nowKey;
+    render();
+  }
+});
+window.addEventListener("hashchange", () => {
+  const d = parseIso(location.hash.slice(1)) || new Date();
+  if (isoDate(d) !== isoDate(current)) go(d);
+});
 // Theme: auto (follow system) → light → dark
 const THEMES = { auto: "🌓 Auto", light: "☀️ Light", dark: "🌙 Dark" };
 let theme = store.get("theme", "auto");
@@ -531,7 +692,7 @@ $("theme").onclick = () => {
 applyTheme();
 $("pref").onchange = e => { pref = e.target.value; store.set("pref", pref); render(); };
 document.addEventListener("keydown", e => {
-  if (e.target.tagName === "SELECT") return;
+  if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowLeft") shift(-1);
   if (e.key === "ArrowRight") shift(1);
 });
