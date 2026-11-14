@@ -14,6 +14,7 @@ Other details:
 - **Day navigation**: ‹ › buttons, tap a day in the week row, tap the date to open a calendar, swipe left/right on the meals, or use the ← / → keys. "Back to today" appears whenever you're on another day
 - Each day has its own link (e.g. `…/healthy-diet/#2026-11-20`), so you can bookmark or share a specific day
 - **Theme switch** in the header: Auto (follows your phone/computer setting), Light or Dark
+- **Accent colour** (the round button next to it): Green, Amber, Teal or Coral, each tuned for both light and dark mode
 - Ticks, water, shopping items and settings are saved in your browser only
 
 No build step and no dependencies: open `index.html` in a browser, or turn on GitHub Pages

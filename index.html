@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#141814" media="(prefers-color-scheme: dark)">
 <script>
   try { const t = JSON.parse(localStorage.getItem("theme")); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+  try { const a = JSON.parse(localStorage.getItem("accent")); if (a === "amber" || a === "teal" || a === "coral") document.documentElement.dataset.accent = a; } catch {}
 </script>
 <style>
   :root {
@@ -28,8 +29,8 @@
       --card: #1d231d;
       --text: #e7ece6;
       --muted: #9ba79b;
-      --accent: #6cc28f;
-      --accent-soft: #24352a;
+      --accent: #4ade80;
+      --accent-soft: #173a26;
       --border: #2e372e;
       --done: #66706a;
     }
@@ -39,11 +40,23 @@
     --card: #1d231d;
     --text: #e7ece6;
     --muted: #9ba79b;
-    --accent: #6cc28f;
-    --accent-soft: #24352a;
+    --accent: #4ade80;
+    --accent-soft: #173a26;
     --border: #2e372e;
     --done: #66706a;
   }
+  /* Accent colour choices (green is the default above). Light shades are deeper so light text on them stays readable. */
+  :root[data-accent="amber"] { --accent: #b0620c; --accent-soft: #fbecd6; }
+  :root[data-accent="teal"] { --accent: #0f7a73; --accent-soft: #dbf0ee; }
+  :root[data-accent="coral"] { --accent: #c2462a; --accent-soft: #fbe3dc; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"])[data-accent="amber"] { --accent: #f5b14c; --accent-soft: #3a2c14; }
+    :root:not([data-theme="light"])[data-accent="teal"] { --accent: #2dd4bf; --accent-soft: #123532; }
+    :root:not([data-theme="light"])[data-accent="coral"] { --accent: #ff8a65; --accent-soft: #3d2219; }
+  }
+  :root[data-theme="dark"][data-accent="amber"] { --accent: #f5b14c; --accent-soft: #3a2c14; }
+  :root[data-theme="dark"][data-accent="teal"] { --accent: #2dd4bf; --accent-soft: #123532; }
+  :root[data-theme="dark"][data-accent="coral"] { --accent: #ff8a65; --accent-soft: #3d2219; }
   :root { color-scheme: light dark; }
   :root[data-theme="light"] { color-scheme: light; }
   :root[data-theme="dark"] { color-scheme: dark; }
@@ -135,6 +148,30 @@
     background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600;
   }
   header { flex-wrap: nowrap; }
+  .hdr-tools { display: flex; align-items: center; gap: 8px; flex: none; }
+  .acc-pick { position: relative; }
+  .acc-btn {
+    width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%; display: grid; place-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .acc-btn .dot { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); transition: background .3s var(--ease), box-shadow .3s var(--ease); }
+  .acc-menu {
+    position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; min-width: 170px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+    box-shadow: 0 12px 28px -10px rgba(0,0,0,.35); transform-origin: top right; animation: menuIn .2s var(--ease);
+  }
+  .acc-menu[hidden] { display: none; }
+  @keyframes menuIn { from { opacity: 0; transform: scale(.95) translateY(-4px); } to { opacity: 1; transform: none; } }
+  .acc-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; padding: 2px 8px 6px; }
+  .acc-opt {
+    display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; text-align: left;
+    padding: 8px; min-height: 40px; border-radius: 10px; font-weight: 600; font-size: .92rem;
+  }
+  .acc-opt .dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+  .acc-opt[aria-checked="true"] { background: var(--accent-soft); color: var(--accent); }
+  .acc-opt[aria-checked="true"]::after { content: ""; margin-left: auto; width: 6px; height: 11px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-2px, -2px); }
+  @media (hover: hover) { .acc-opt:not([aria-checked="true"]):hover { background: var(--bg); } }
+  @media (prefers-reduced-motion: reduce) { .acc-menu { animation: none; } }
   /* Sketch-style line icons */
   .ic {
     width: 1.2em; height: 1.2em; flex: none; vertical-align: -.22em;
@@ -145,8 +182,12 @@
   .chip .ic { width: 1.05em; height: 1.05em; vertical-align: -.18em; }
   header h1 { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @media (max-width: 370px) {
-    header h1 { font-size: 1.2rem; }
-    .seg-icons label span { width: 32px; min-height: 32px; font-size: .95rem; }
+    header h1 { font-size: 1.1rem; }
+    .seg-icons label span { width: 30px; min-height: 32px; font-size: .95rem; }
+    .acc-btn { width: 34px; height: 34px; }
+    .acc-btn .dot { width: 18px; height: 18px; }
+    .hdr-tools { gap: 4px; }
+    header { gap: 6px; }
     .arrow { width: 40px; height: 40px; }
     .date-main { font-size: .95rem; }
     .daynav-head { gap: 4px; }
@@ -427,11 +468,23 @@
 <div class="wrap">
   <header>
     <h1><span class="logo"><svg class="ic" aria-hidden="true"><use href="#i-bowl"/></svg></span> Daily Menu</h1>
+    <div class="hdr-tools">
+      <div class="acc-pick">
+        <button class="acc-btn" id="accentBtn" aria-haspopup="true" aria-expanded="false" aria-controls="accentMenu" title="Accent colour" aria-label="Accent colour"><span class="dot"></span></button>
+        <div class="acc-menu" id="accentMenu" role="radiogroup" aria-label="Accent colour" hidden>
+          <div class="acc-title">Accent colour</div>
+          <button class="acc-opt" role="radio" data-accent="green" aria-checked="false"><span class="dot" style="background:#3fae6b"></span>Green</button>
+          <button class="acc-opt" role="radio" data-accent="amber" aria-checked="false"><span class="dot" style="background:#e39a2f"></span>Amber</button>
+          <button class="acc-opt" role="radio" data-accent="teal" aria-checked="false"><span class="dot" style="background:#1fb3a3"></span>Teal</button>
+          <button class="acc-opt" role="radio" data-accent="coral" aria-checked="false"><span class="dot" style="background:#f2714f"></span>Coral</button>
+        </div>
+      </div>
     <div class="seg seg-icons" id="themeSeg" role="radiogroup" aria-label="Theme" style="--n:3">
       <span class="seg-thumb" aria-hidden="true"></span>
       <label title="Auto (follow device)"><input type="radio" name="theme" value="auto" aria-label="Auto theme"><span><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg></span></label>
       <label title="Light"><input type="radio" name="theme" value="light" aria-label="Light theme"><span><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg></span></label>
       <label title="Dark"><input type="radio" name="theme" value="dark" aria-label="Dark theme"><span><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg></span></label>
+    </div>
     </div>
   </header>
 
@@ -1205,6 +1258,37 @@ function setSeg(el, value) {
   el.style.setProperty("--i", Math.max(0, inputs.findIndex(r => r.value === value)));
   el.dataset.value = value;
 }
+
+// Accent colour: green (default) / amber / teal / coral
+const ACCENTS = ["green", "amber", "teal", "coral"];
+let accent = store.get("accent", "green");
+if (ACCENTS.indexOf(accent) === -1) accent = "green";
+function applyAccent() {
+  if (accent === "green") delete document.documentElement.dataset.accent;
+  else document.documentElement.dataset.accent = accent;
+  document.querySelectorAll(".acc-opt").forEach(o => o.setAttribute("aria-checked", o.dataset.accent === accent));
+}
+function setAccentMenu(open) {
+  $("accentMenu").hidden = !open;
+  $("accentBtn").setAttribute("aria-expanded", open);
+  if (open) { const sel = document.querySelector('.acc-opt[aria-checked="true"]'); if (sel) sel.focus(); }
+}
+$("accentBtn").addEventListener("click", e => { e.stopPropagation(); setAccentMenu($("accentMenu").hidden); });
+$("accentMenu").addEventListener("click", e => {
+  const o = e.target.closest(".acc-opt"); if (!o) return;
+  accent = o.dataset.accent; store.set("accent", accent); applyAccent();
+  setAccentMenu(false); $("accentBtn").focus();
+});
+document.addEventListener("click", e => { if (!$("accentMenu").hidden && !e.target.closest(".acc-pick")) setAccentMenu(false); });
+$("accentMenu").addEventListener("keydown", e => {
+  const opts = [...document.querySelectorAll(".acc-opt")], i = opts.indexOf(document.activeElement);
+  if (e.key === "Escape") { setAccentMenu(false); $("accentBtn").focus(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); e.stopPropagation();
+    opts[(i + (e.key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length].focus();
+  } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") e.stopPropagation();
+});
+applyAccent();
 
 // Theme: auto (follow system) / light / dark
 let theme = store.get("theme", "auto");
