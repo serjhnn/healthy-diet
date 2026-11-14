@@ -7,6 +7,7 @@ A single static page (`index.html`) that tells you what to eat today.
 - **Vegetarian mode**, a **shopping list** for the day and a **this-week overview** (click a row to open that day)
 - Tick meals as eaten, track glasses of water and get a daily tip. These are saved in your browser only
 - Use the ← / → keys or buttons to look at other days
+- **Theme button** cycles Auto (follows your phone/computer setting) → Light → Dark, and remembers your choice
 
 No build step and no dependencies: open `index.html` in a browser, or turn on GitHub Pages
 (Settings → Pages → Deploy from branch → `/root`) to get a URL you can bookmark on your phone.

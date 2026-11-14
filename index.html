@@ -6,6 +6,11 @@
 <title>Healthy Diet — Today's Menu</title>
 <meta name="description" content="A daily healthy eating plan: open it every day to see what to eat.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>">
+<meta name="theme-color" content="#f6f7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141814" media="(prefers-color-scheme: dark)">
+<script>
+  try { const t = JSON.parse(localStorage.getItem("theme")); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
 <style>
   :root {
     --bg: #f6f7f2;
@@ -18,7 +23,7 @@
     --done: #9aa59a;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #141814;
       --card: #1d231d;
       --text: #e7ece6;
@@ -29,6 +34,19 @@
       --done: #66706a;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #141814;
+    --card: #1d231d;
+    --text: #e7ece6;
+    --muted: #9ba79b;
+    --accent: #6cc28f;
+    --accent-soft: #24352a;
+    --border: #2e372e;
+    --done: #66706a;
+  }
+  :root { color-scheme: light dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -40,7 +58,7 @@
   header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
   h1 { margin: 0; font-size: 1.6rem; }
   h1 small { display: block; font-size: .95rem; font-weight: 400; color: var(--muted); }
-  .nav { display: flex; gap: 6px; }
+  .nav { display: flex; flex-wrap: wrap; gap: 6px; }
   button, select {
     font: inherit; color: var(--text); background: var(--card);
     border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
@@ -115,6 +133,7 @@
       <button id="prev" aria-label="Previous day">←</button>
       <button id="today">Today</button>
       <button id="next" aria-label="Next day">→</button>
+      <button id="theme" aria-label="Change theme"></button>
     </div>
   </header>
 
@@ -488,6 +507,26 @@ function shift(n) { current = new Date(current); current.setDate(current.getDate
 $("prev").onclick = () => shift(-1);
 $("next").onclick = () => shift(1);
 $("today").onclick = () => { current = new Date(); render(); };
+// Theme: auto (follow system) → light → dark
+const THEMES = { auto: "🌓 Auto", light: "☀️ Light", dark: "🌙 Dark" };
+let theme = store.get("theme", "auto");
+function applyTheme() {
+  const root = document.documentElement;
+  if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
+  $("theme").textContent = THEMES[theme];
+  $("theme").title = "Theme: " + theme + " (tap to change)";
+  const dark = theme === "dark" || (theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    if (theme === "auto") m.content = m.media.includes("dark") ? "#141814" : "#f6f7f2";
+    else m.content = dark ? "#141814" : "#f6f7f2";
+  });
+}
+$("theme").onclick = () => {
+  theme = { auto: "light", light: "dark", dark: "auto" }[theme];
+  store.set("theme", theme);
+  applyTheme();
+};
+applyTheme();
 $("pref").onchange = e => { pref = e.target.value; store.set("pref", pref); render(); };
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "SELECT") return;
