@@ -109,14 +109,37 @@
   @keyframes slideL { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
   @keyframes slideR { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .meals.slide-l, .meals.slide-r { animation: none; } }
-  button, select {
+  button {
     font: inherit; color: var(--text); background: var(--card);
     border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
   }
   button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-height: 40px; }
   @media (hover: hover) { button:hover { border-color: var(--accent); } }
   button:focus:not(:focus-visible) { outline: none; }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; color: var(--muted); font-size: .9rem; }
+  .controls { display: flex; justify-content: center; margin: 14px 0 4px; }
+  /* Diet switch: segmented control with a sliding highlight */
+  .seg {
+    position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 360px;
+    padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--border);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.06);
+  }
+  .seg label { position: relative; z-index: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .seg label span {
+    display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 0 12px;
+    border-radius: 999px; font-size: .92rem; font-weight: 600; color: var(--muted); white-space: nowrap;
+    transition: color .2s;
+  }
+  .seg input:checked + span { color: var(--bg); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (hover: hover) { .seg label:hover input:not(:checked) + span { color: var(--text); } }
+  .seg-thumb {
+    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px;
+    background: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    transition: transform .25s cubic-bezier(.3,.7,.4,1);
+  }
+  .seg[data-value="veg"] .seg-thumb { transform: translateX(100%); }
+  @media (prefers-reduced-motion: reduce) { .seg-thumb, .seg label span { transition: none; } }
   .summary {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 20px;
   }
@@ -197,12 +220,11 @@
   </nav>
 
   <div class="controls">
-    <label>Diet:
-      <select id="pref">
-        <option value="all">Everything</option>
-        <option value="veg">Vegetarian</option>
-      </select>
-    </label>
+    <div class="seg" id="pref" role="radiogroup" aria-label="Diet">
+      <span class="seg-thumb" aria-hidden="true"></span>
+      <label><input type="radio" name="pref" value="all"><span>🍽️ Everything</span></label>
+      <label><input type="radio" name="pref" value="veg"><span>🌱 Vegetarian</span></label>
+    </div>
   </div>
 
   <div class="summary" id="summary"></div>
@@ -505,7 +527,8 @@ function render() {
   const todayKey = isoDate(new Date());
 
   renderNav(key, todayKey);
-  $("pref").value = pref;
+  $("pref").dataset.value = pref;
+  $("pref").querySelectorAll("input").forEach(r => { r.checked = r.value === pref; });
 
   const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
   const eaten = SLOTS.filter(s => done[s.key]).length;
@@ -690,7 +713,10 @@ $("theme").onclick = () => {
   applyTheme();
 };
 applyTheme();
-$("pref").onchange = e => { pref = e.target.value; store.set("pref", pref); render(); };
+$("pref").addEventListener("change", e => {
+  if (e.target.name !== "pref") return;
+  pref = e.target.value; store.set("pref", pref); render();
+});
 document.addEventListener("keydown", e => {
   if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") return;
   if (e.key === "ArrowLeft") shift(-1);
