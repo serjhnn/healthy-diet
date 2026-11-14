@@ -242,11 +242,60 @@
   .water button { padding: 4px 8px; font-size: 1.2rem; min-width: 44px; color: var(--muted); opacity: .55; }
   .water button.on { opacity: 1; color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
   h2 { font-size: 1.2rem; margin: 28px 0 10px; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--card); border-radius: 10px; overflow: hidden; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  th { color: var(--muted); font-weight: 600; }
-  tr.today td { background: var(--accent-soft); }
+  /* ----- Week at a glance ----- */
+  .week { margin-top: 32px; }
+  .week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .week-head h2 { margin: 0; }
+  .week-range { font-size: .88rem; color: var(--muted); font-weight: 600; }
+  .week-stats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+  .week-stats .fact { background: var(--card); }
+  .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .wday {
+    display: block; color: inherit; text-decoration: none; background: var(--card);
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+    -webkit-tap-highlight-color: transparent; transition: border-color .15s, box-shadow .15s;
+  }
+  @media (hover: hover) { .wday:hover { border-color: var(--accent); } }
+  .wday:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wday.sel { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .wday.past { opacity: .72; }
+  .wday-head { display: flex; align-items: center; gap: 12px; }
+  .wday-date {
+    flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 44px; height: 46px; border-radius: 12px; background: var(--bg); line-height: 1.1;
+  }
+  .wday-date .w { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .wday-date .n { font-size: 1.15rem; font-weight: 700; }
+  .wday.today .wday-date { background: var(--accent); }
+  .wday.today .wday-date .w, .wday.today .wday-date .n { color: var(--bg); }
+  .wday-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .wday-title { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 6px; }
+  .wday-tag {
+    font-size: .66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+    padding: 1px 7px; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent);
+  }
+  .wday.today .wday-tag { background: var(--accent); color: var(--bg); }
+  .wday-kcal { font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+  .wday-kcal .ic { width: 14px; height: 14px; vertical-align: 0; }
+  .ring { flex: none; position: relative; width: 40px; height: 40px; display: grid; place-items: center; }
+  .ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 3; }
+  .ring .track { stroke: var(--border); }
+  .ring .prog { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .3s; }
+  .ring b { font-size: .72rem; font-weight: 700; color: var(--muted); }
+  .ring.full b { color: var(--accent); }
+  .wday-meals { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px dashed var(--border); display: grid; gap: 5px; }
+  .wday-meals li { display: flex; align-items: center; gap: 8px; font-size: .85rem; min-width: 0; }
+  .wday-meals li .ic { width: 16px; height: 16px; flex: none; color: var(--accent); vertical-align: 0; }
+  .wday-meals li span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wday-meals li .tick { color: var(--accent); }
+  .wday-meals li.done span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--border); }
+  @media (prefers-reduced-motion: reduce) { .wday, .ring .prog { transition: none; } }
+  /* Phones: past days collapse to their header row to keep the list short */
+  @media (max-width: 640px) {
+    .wday.past .wday-meals { display: none; }
+    .wday.past { padding-top: 8px; padding-bottom: 8px; }
+  }
   tr { cursor: pointer; }
   details.shop-box { margin-top: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
   .shop-box summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; list-style: none; }
@@ -256,21 +305,12 @@
   .shop-box[open] .sum-chev { transform: rotate(180deg); }
   @media (prefers-reduced-motion: reduce) { .sum-chev { transition: none; } }
   .shop { columns: 2 200px; font-size: .9rem; padding-left: 18px; }
-  /* Week overview: table on wide screens, stacked cards on phones */
   @media (max-width: 640px) {
     .wrap { padding: 16px 16px 40px; }
     h1 { font-size: 1.4rem; }
     header { align-items: flex-start; }
     .stat { padding: 8px 10px; }
     .stat b { font-size: 1.1rem; }
-    table, tbody, tr, td { display: block; width: 100%; }
-    table { background: none; }
-    tr.head { display: none; }
-    tr[data-date] { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; padding: 8px 12px; }
-    tr.today { border-color: var(--accent); }
-    tr.today td { background: none; }
-    td { border: 0; padding: 3px 0; }
-    td[data-label]::before { content: attr(data-label) ": "; color: var(--muted); font-size: .8rem; }
   }
   footer { margin-top: 32px; font-size: .8rem; color: var(--muted); }
 </style>
@@ -350,8 +390,14 @@
     <ul class="shop" id="shop"></ul>
   </details>
 
-  <h2>Week at a glance</h2>
-  <div class="table-wrap"><table id="week"></table></div>
+  <section class="week" aria-labelledby="weekTitle">
+    <div class="week-head">
+      <h2 id="weekTitle">Week at a glance</h2>
+      <span class="week-range" id="weekRange"></span>
+    </div>
+    <div class="week-stats" id="weekStats"></div>
+    <div class="week-grid" id="week"></div>
+  </section>
 
   <footer>
     Calories and protein are approximate, for a ~1,600–1,900 kcal day (a moderate, weight-friendly level). Adjust portions to your needs;
@@ -709,24 +755,62 @@ function render() {
   const items = [...new Set(SLOTS.flatMap(s => plan[s.key].ing))];
   $("shop").innerHTML = items.map(i => `<li>${esc(i)}</li>`).join("");
 
-  // Week overview (Mon–Sun containing current day)
+  renderWeek(key, todayKey);
+}
+
+// ---------- Week at a glance ----------
+function renderWeek(key, todayKey) {
   const monday = new Date(current);
   monday.setDate(current.getDate() - ((current.getDay() + 6) % 7));
-  let rows = `<tr class="head"><th>Day</th>${SLOTS.map(s => `<th>${s.label}</th>`).join("")}</tr>`;
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  const fmt = d => d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  $("weekRange").textContent = `${fmt(monday)} – ${fmt(sunday)}`;
+
+  const todayNum = dayNumber(new Date());
+  const C = 2 * Math.PI * 16; // ring circumference
+  let eatenTotal = 0, kcalTotal = 0, vegTotal = 0, html = "";
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
-    const p = planFor(d, pref);
     const k = isoDate(d);
-    rows += `<tr data-date="${k}" class="${k === key ? "today" : ""}">
-      <td><b>${d.toLocaleDateString(undefined, { weekday: "short" })}</b> ${d.getDate()}</td>
-      ${SLOTS.map(s => `<td data-label="${s.label}">${esc(p[s.key].name)}</td>`).join("")}</tr>`;
+    const p = planFor(d, pref);
+    const done = store.get("done:" + k, {});
+    const eaten = SLOTS.filter(s => done[s.key]).length;
+    const kcal = SLOTS.reduce((a, s) => a + p[s.key].kcal, 0);
+    eatenTotal += eaten; kcalTotal += kcal; vegTotal += SLOTS.filter(s => p[s.key].veg).length;
+
+    const isToday = k === todayKey, isSel = k === key, isPast = dayNumber(d) < todayNum;
+    const tag = isToday ? "Today" : isSel ? "Viewing" : "";
+    const cls = ["wday", isToday && "today", isSel && "sel", isPast && !isSel && "past"].filter(Boolean).join(" ");
+    html += `<a class="${cls}" href="#${k}" data-date="${k}"
+        aria-label="${d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}${isToday ? ", today" : ""}: ${eaten} of ${SLOTS.length} meals eaten">
+      <div class="wday-head">
+        <div class="wday-date"><span class="w">${d.toLocaleDateString(undefined, { weekday: "short" })}</span><span class="n">${d.getDate()}</span></div>
+        <div class="wday-info">
+          <span class="wday-title">${d.toLocaleDateString(undefined, { weekday: "long" })}${tag ? `<span class="wday-tag">${tag}</span>` : ""}</span>
+          <span class="wday-kcal">${icon("flame")} ~${kcal} kcal</span>
+        </div>
+        <span class="ring${eaten === SLOTS.length ? " full" : ""}" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="16"/>
+            <circle class="prog" cx="20" cy="20" r="16" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${(C * (1 - eaten / SLOTS.length)).toFixed(2)}"${eaten ? "" : ' style="opacity:0"'}/></svg>
+          <b>${eaten}/${SLOTS.length}</b>
+        </span>
+      </div>
+      <ul class="wday-meals">${SLOTS.map(s => `<li class="${done[s.key] ? "done" : ""}" title="${s.label}">${icon(s.icon)}<span>${esc(p[s.key].name)}</span>${done[s.key] ? icon("check", "ic tick") : ""}</li>`).join("")}</ul>
+    </a>`;
   }
-  $("week").innerHTML = rows;
-  $("week").querySelectorAll("tr[data-date]").forEach(tr => tr.addEventListener("click", () => {
-    go(parseIso(tr.dataset.date));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }));
+  $("week").innerHTML = html;
+  $("weekStats").innerHTML = `
+    <span class="fact">${icon("check")} ${eatenTotal}/${SLOTS.length * 7} meals eaten</span>
+    <span class="fact">${icon("flame")} ~${Math.round(kcalTotal / 7)} kcal/day</span>
+    <span class="fact fact-veg">${icon("leaf")} ${vegTotal} veggie meals</span>`;
 }
+$("week").addEventListener("click", e => {
+  const a = e.target.closest("a[data-date]");
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  e.preventDefault();
+  go(parseIso(a.dataset.date));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
 // ---------- Day navigation ----------
 function relativeLabel(diff) {
