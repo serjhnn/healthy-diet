@@ -515,11 +515,13 @@ function applyTheme() {
   if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
   $("theme").textContent = THEMES[theme];
   $("theme").title = "Theme: " + theme + " (tap to change)";
-  const dark = theme === "dark" || (theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
-    if (theme === "auto") m.content = m.media.includes("dark") ? "#141814" : "#f6f7f2";
-    else m.content = dark ? "#141814" : "#f6f7f2";
-  });
+  // Cosmetic only (browser bar colour): never let it break the page on older browsers.
+  try {
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      const forDark = (m.getAttribute("media") || "").indexOf("dark") !== -1;
+      m.setAttribute("content", (theme === "auto" ? forDark : theme === "dark") ? "#141814" : "#f6f7f2");
+    });
+  } catch (e) {}
 }
 $("theme").onclick = () => {
   theme = { auto: "light", light: "dark", dark: "auto" }[theme];
