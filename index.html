@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Healthy Diet — Today's Menu</title>
+<meta name="description" content="A daily healthy eating plan: open it every day to see what to eat.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>">
+<style>
+  :root {
+    --bg: #f6f7f2;
+    --card: #ffffff;
+    --text: #1f2a1f;
+    --muted: #5f6b5f;
+    --accent: #2f7d4f;
+    --accent-soft: #e3f1e7;
+    --border: #dfe5dc;
+    --done: #9aa59a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141814;
+      --card: #1d231d;
+      --text: #e7ece6;
+      --muted: #9ba79b;
+      --accent: #6cc28f;
+      --accent-soft: #24352a;
+      --border: #2e372e;
+      --done: #66706a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-size: 1.6rem; }
+  h1 small { display: block; font-size: .95rem; font-weight: 400; color: var(--muted); }
+  .nav { display: flex; gap: 6px; }
+  button, select {
+    font: inherit; color: var(--text); background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; color: var(--muted); font-size: .9rem; }
+  .summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0 20px;
+  }
+  .stat { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; }
+  .stat b { display: block; font-size: 1.3rem; }
+  .stat span { font-size: .85rem; color: var(--muted); }
+  .meals { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .meal {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .meal.done { opacity: .55; }
+  .meal.done h3 { text-decoration: line-through; color: var(--done); }
+  .meal-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .slot { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .time { font-size: .8rem; color: var(--muted); }
+  .meal h3 { margin: 0; font-size: 1.1rem; }
+  .meta { font-size: .85rem; color: var(--muted); }
+  .meal ul { margin: 4px 0; padding-left: 18px; font-size: .9rem; }
+  .how { font-size: .88rem; color: var(--muted); margin: 0; }
+  .meal label { margin-top: auto; padding-top: 6px; font-size: .9rem; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .tip {
+    margin: 20px 0; padding: 14px 16px; border-left: 4px solid var(--accent);
+    background: var(--card); border-radius: 0 10px 10px 0;
+  }
+  .water { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .water button { padding: 4px 8px; font-size: 1.1rem; opacity: .35; }
+  .water button.on { opacity: 1; border-color: var(--accent); }
+  h2 { font-size: 1.2rem; margin: 28px 0 10px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--card); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  tr.today td { background: var(--accent-soft); }
+  tr { cursor: pointer; }
+  details { margin-top: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+  summary { cursor: pointer; font-weight: 600; }
+  .shop { columns: 2 200px; font-size: .9rem; padding-left: 18px; }
+  footer { margin-top: 32px; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🥗 Today's Menu <small id="dateLabel"></small></h1>
+    <div class="nav">
+      <button id="prev" aria-label="Previous day">←</button>
+      <button id="today">Today</button>
+      <button id="next" aria-label="Next day">→</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <label>Diet:
+      <select id="pref">
+        <option value="all">Everything</option>
+        <option value="veg">Vegetarian</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="summary" id="summary"></div>
+  <div class="meals" id="meals"></div>
+
+  <div class="tip">
+    <strong>💡 Tip of the day:</strong> <span id="tip"></span>
+    <div style="margin-top:10px"><strong>💧 Water</strong> <span class="meta">(tap a glass, goal 8)</span></div>
+    <div class="water" id="water"></div>
+  </div>
+
+  <details>
+    <summary>🛒 Shopping list for this day</summary>
+    <ul class="shop" id="shop"></ul>
+  </details>
+
+  <h2>This week</h2>
+  <div class="table-wrap"><table id="week"></table></div>
+
+  <footer>
+    Calories and protein are approximate, for a ~1,600–1,900 kcal day (a moderate, weight-friendly level). Adjust portions to your needs;
+    this is general guidance, not medical advice. Ticks and water are saved in this browser only.
+  </footer>
+</div>
+
+<script>
+// ---------- Meal library ----------
+// kcal / protein (g) are rough per-portion estimates. veg = vegetarian.
+const MEALS = {
+  breakfast: [
+    { name: "Greek yogurt bowl with berries & walnuts", kcal: 380, p: 24, veg: true,
+      ing: ["200 g Greek yogurt", "1 cup mixed berries", "20 g walnuts", "1 tsp honey"],
+      how: "Layer yogurt, berries and nuts; drizzle honey." },
+    { name: "Overnight oats with chia & banana", kcal: 420, p: 16, veg: true,
+      ing: ["50 g rolled oats", "1 tbsp chia seeds", "200 ml milk", "1 banana", "Cinnamon"],
+      how: "Mix oats, chia and milk the night before; top with sliced banana." },
+    { name: "Veggie omelette with wholegrain toast", kcal: 410, p: 26, veg: true,
+      ing: ["3 eggs", "Spinach", "Cherry tomatoes", "1 slice wholegrain bread"],
+      how: "Sauté veg 2 min, add beaten eggs, fold. Serve with toast." },
+    { name: "Avocado toast with poached egg", kcal: 400, p: 17, veg: true,
+      ing: ["1 slice sourdough", "½ avocado", "1 egg", "Chili flakes, lemon"],
+      how: "Mash avocado with lemon, spread on toast, top with poached egg." },
+    { name: "Cottage cheese with pear & almonds", kcal: 330, p: 25, veg: true,
+      ing: ["200 g cottage cheese", "1 pear", "15 g almonds"],
+      how: "Slice pear over cottage cheese, sprinkle almonds." },
+    { name: "Green smoothie & a boiled egg", kcal: 350, p: 20, veg: true,
+      ing: ["Handful spinach", "1 banana", "200 ml kefir", "1 tbsp peanut butter", "1 egg"],
+      how: "Blend everything except the egg. Boil egg 8 min." },
+    { name: "Buckwheat porridge with apple", kcal: 380, p: 13, veg: true,
+      ing: ["60 g buckwheat", "1 apple", "200 ml milk", "Cinnamon", "1 tbsp seeds"],
+      how: "Simmer buckwheat in milk 15 min; top with grated apple and seeds." },
+    { name: "Smoked salmon on rye with cream cheese", kcal: 360, p: 24, veg: false,
+      ing: ["2 slices rye bread", "60 g smoked salmon", "1 tbsp light cream cheese", "Cucumber, dill"],
+      how: "Spread cheese on rye, add salmon, cucumber and dill." },
+    { name: "Shakshuka (1 portion)", kcal: 370, p: 20, veg: true,
+      ing: ["2 eggs", "200 g canned tomatoes", "½ pepper", "Onion, cumin, paprika"],
+      how: "Simmer veg & spices 10 min, crack in eggs, cover 5 min." },
+    { name: "Protein pancakes with berries", kcal: 400, p: 25, veg: true,
+      ing: ["1 banana", "2 eggs", "30 g oats", "100 g quark/skyr", "Berries"],
+      how: "Blend banana, eggs, oats & quark; cook small pancakes; top with berries." },
+    { name: "Tofu scramble with mushrooms", kcal: 340, p: 22, veg: true,
+      ing: ["150 g firm tofu", "Mushrooms", "Spinach", "Turmeric", "1 slice wholegrain toast"],
+      how: "Crumble tofu into pan with mushrooms & turmeric, add spinach, serve on toast." },
+    { name: "Muesli with kefir & kiwi", kcal: 370, p: 14, veg: true,
+      ing: ["50 g unsweetened muesli", "200 ml kefir", "1 kiwi"],
+      how: "Pour kefir over muesli, top with sliced kiwi." },
+    { name: "Turkey & veggie wholegrain wrap", kcal: 390, p: 27, veg: false,
+      ing: ["1 wholegrain tortilla", "70 g turkey breast", "Lettuce, tomato", "1 tbsp hummus"],
+      how: "Spread hummus, fill and roll." },
+    { name: "Ricotta toast with figs or tomato", kcal: 340, p: 16, veg: true,
+      ing: ["1–2 slices wholegrain bread", "80 g ricotta", "Fresh figs or tomato", "Olive oil"],
+      how: "Spread ricotta, top with fruit or tomato, a drizzle of oil." },
+  ],
+  lunch: [
+    { name: "Quinoa salad with chickpeas & feta", kcal: 540, p: 22, veg: true,
+      ing: ["70 g quinoa", "½ can chickpeas", "30 g feta", "Cucumber, tomato, parsley", "Olive oil, lemon"],
+      how: "Cook quinoa, cool, toss with everything." },
+    { name: "Grilled chicken & roasted veg bowl", kcal: 560, p: 40, veg: false,
+      ing: ["150 g chicken breast", "Zucchini, pepper, red onion", "60 g brown rice", "Olive oil"],
+      how: "Roast veg 25 min at 200°C, grill chicken, serve over rice." },
+    { name: "Lentil soup with wholegrain bread", kcal: 480, p: 24, veg: true,
+      ing: ["80 g red lentils", "Carrot, onion, celery", "Cumin", "1 slice bread"],
+      how: "Simmer everything in stock 20 min, blend partly." },
+    { name: "Tuna Niçoise salad", kcal: 500, p: 36, veg: false,
+      ing: ["1 can tuna", "1 egg", "Green beans", "Small potatoes", "Olives, lettuce"],
+      how: "Boil potatoes, beans & egg; assemble on lettuce with tuna." },
+    { name: "Hummus & falafel wholegrain pita", kcal: 560, p: 20, veg: true,
+      ing: ["1 wholegrain pita", "4 baked falafel", "2 tbsp hummus", "Salad veg"],
+      how: "Warm pita, stuff with falafel, hummus and veg." },
+    { name: "Turkey chili with beans", kcal: 520, p: 38, veg: false,
+      ing: ["120 g lean turkey mince", "½ can kidney beans", "Tomatoes", "Pepper, onion, chili"],
+      how: "Brown mince, add the rest, simmer 25 min. Makes good leftovers." },
+    { name: "Buddha bowl with tofu & sweet potato", kcal: 550, p: 24, veg: true,
+      ing: ["150 g tofu", "1 small sweet potato", "Kale", "60 g brown rice", "Tahini dressing"],
+      how: "Roast tofu & sweet potato 25 min, assemble with rice and kale." },
+    { name: "Salmon poke bowl", kcal: 580, p: 34, veg: false,
+      ing: ["120 g salmon", "70 g sushi/brown rice", "Edamame", "Cucumber, avocado", "Soy, sesame"],
+      how: "Cube salmon (sushi-grade or cooked), serve over rice with toppings." },
+    { name: "Minestrone with parmesan", kcal: 450, p: 18, veg: true,
+      ing: ["Mixed veg", "½ can cannellini beans", "40 g wholegrain pasta", "Tomatoes", "Parmesan"],
+      how: "Simmer veg & beans 20 min, add pasta last 10 min." },
+    { name: "Chicken Caesar salad (light)", kcal: 490, p: 40, veg: false,
+      ing: ["130 g chicken", "Romaine", "Yogurt-based Caesar dressing", "Parmesan", "Wholegrain croutons"],
+      how: "Grill chicken, toss with lettuce and dressing." },
+    { name: "Egg fried rice with veggies", kcal: 520, p: 20, veg: true,
+      ing: ["Leftover brown rice", "2 eggs", "Peas, carrot, spring onion", "Soy sauce"],
+      how: "Stir-fry veg, push aside, scramble eggs, add rice & soy." },
+    { name: "Greek salad with grilled halloumi", kcal: 530, p: 24, veg: true,
+      ing: ["60 g halloumi", "Tomato, cucumber, pepper, onion", "Olives", "Olive oil"],
+      how: "Grill halloumi slices; serve over chopped salad." },
+    { name: "Beef & broccoli stir-fry", kcal: 540, p: 36, veg: false,
+      ing: ["120 g lean beef strips", "Broccoli", "Ginger, garlic", "60 g rice noodles"],
+      how: "Sear beef, stir-fry broccoli, add sauce and noodles." },
+    { name: "Black bean & corn burrito bowl", kcal: 560, p: 22, veg: true,
+      ing: ["½ can black beans", "Corn", "60 g brown rice", "Salsa", "Greek yogurt, avocado"],
+      how: "Warm beans with cumin, assemble everything in a bowl." },
+    { name: "Shrimp & avocado salad", kcal: 450, p: 32, veg: false,
+      ing: ["150 g shrimp", "½ avocado", "Mixed greens", "Cherry tomatoes", "Lime"],
+      how: "Sauté shrimp 3 min, toss with salad and lime." },
+    { name: "Spinach & feta wholegrain wrap", kcal: 470, p: 22, veg: true,
+      ing: ["1 large wholegrain tortilla", "Spinach", "40 g feta", "1 egg", "Sun-dried tomatoes"],
+      how: "Wilt spinach with egg, add feta, wrap and toast." },
+  ],
+  dinner: [
+    { name: "Baked salmon, quinoa & asparagus", kcal: 560, p: 38, veg: false,
+      ing: ["150 g salmon", "60 g quinoa", "Asparagus", "Lemon, dill"],
+      how: "Bake salmon & asparagus 15 min at 200°C; serve with quinoa." },
+    { name: "Chickpea & spinach curry", kcal: 520, p: 18, veg: true,
+      ing: ["1 can chickpeas", "Spinach", "Light coconut milk", "Curry paste", "60 g brown rice"],
+      how: "Fry curry paste, add chickpeas & coconut milk, simmer 15 min, stir in spinach." },
+    { name: "Chicken stir-fry with veggies", kcal: 500, p: 38, veg: false,
+      ing: ["150 g chicken", "Pepper, snap peas, carrot", "Soy, ginger, garlic", "60 g rice"],
+      how: "Stir-fry chicken, add veg, finish with sauce." },
+    { name: "Turkey meatballs with zucchini noodles", kcal: 480, p: 36, veg: false,
+      ing: ["150 g turkey mince", "2 zucchini", "Tomato sauce", "Basil"],
+      how: "Bake meatballs 20 min, warm in sauce, serve over spiralized zucchini." },
+    { name: "Stuffed bell peppers with lentils", kcal: 470, p: 22, veg: true,
+      ing: ["2 bell peppers", "80 g cooked lentils", "Tomato, onion", "Feta or cheese topping"],
+      how: "Fill halved peppers, bake 30 min at 190°C." },
+    { name: "Cod with sweet potato wedges & greens", kcal: 490, p: 34, veg: false,
+      ing: ["160 g cod", "1 sweet potato", "Green beans", "Paprika"],
+      how: "Roast wedges 30 min, add cod for the last 12 min." },
+    { name: "Wholegrain pasta primavera", kcal: 540, p: 20, veg: true,
+      ing: ["80 g wholegrain pasta", "Zucchini, peas, tomatoes", "Garlic, olive oil", "Parmesan"],
+      how: "Cook pasta, sauté veg in garlic oil, toss together." },
+    { name: "Lean beef & vegetable stew", kcal: 520, p: 36, veg: false,
+      ing: ["130 g lean beef", "Carrot, potato, onion", "Tomato paste", "Thyme"],
+      how: "Brown beef, add veg & stock, simmer 1 h (or pressure-cook 25 min)." },
+    { name: "Tofu & veg teriyaki with brown rice", kcal: 510, p: 24, veg: true,
+      ing: ["180 g firm tofu", "Broccoli, pepper", "Light teriyaki sauce", "60 g brown rice"],
+      how: "Crisp tofu, add veg, glaze with teriyaki." },
+    { name: "Roast chicken thigh, potatoes & salad", kcal: 580, p: 36, veg: false,
+      ing: ["2 skinless chicken thighs", "200 g baby potatoes", "Rosemary", "Green salad"],
+      how: "Roast together 35 min at 200°C, serve with salad." },
+    { name: "Mushroom & barley risotto", kcal: 500, p: 16, veg: true,
+      ing: ["70 g pearl barley", "Mushrooms", "Onion, garlic", "Stock", "Parmesan"],
+      how: "Toast barley, add stock gradually over 35 min, stir in mushrooms." },
+    { name: "Shrimp & veg tacos", kcal: 500, p: 30, veg: false,
+      ing: ["150 g shrimp", "3 corn tortillas", "Cabbage slaw", "Avocado, lime"],
+      how: "Season & sauté shrimp, fill tortillas with slaw and avocado." },
+    { name: "Vegetable frittata with salad", kcal: 450, p: 26, veg: true,
+      ing: ["3 eggs", "Potato, pepper, spinach", "30 g cheese", "Side salad"],
+      how: "Sauté veg, pour eggs, bake 12 min at 180°C." },
+    { name: "Mackerel/sardines with beetroot & lentils", kcal: 530, p: 34, veg: false,
+      ing: ["1 tin mackerel or sardines", "Cooked beetroot", "100 g cooked lentils", "Rocket"],
+      how: "Warm lentils with lemon, top with fish and beetroot." },
+    { name: "Black bean burgers with slaw", kcal: 520, p: 22, veg: true,
+      ing: ["1 can black beans", "Oats, onion, spices", "Wholegrain bun", "Cabbage slaw"],
+      how: "Mash beans with oats & spices, form patties, pan-fry 4 min/side." },
+    { name: "Chicken fajita traybake", kcal: 530, p: 38, veg: false,
+      ing: ["150 g chicken strips", "Peppers, onion", "Fajita spice", "2 small wholegrain tortillas"],
+      how: "Roast everything on one tray 20 min at 200°C." },
+    { name: "Eggplant & lentil moussaka (light)", kcal: 500, p: 22, veg: true,
+      ing: ["1 eggplant", "Lentils", "Tomato sauce", "Yogurt-egg topping"],
+      how: "Layer roasted eggplant with lentil sauce, top, bake 30 min." },
+    { name: "Pesto white fish with cherry tomatoes", kcal: 470, p: 34, veg: false,
+      ing: ["160 g white fish", "1 tbsp pesto", "Cherry tomatoes", "60 g couscous"],
+      how: "Spread pesto on fish, bake with tomatoes 15 min, serve with couscous." },
+  ],
+  snack: [
+    { name: "Apple with peanut butter", kcal: 200, p: 5, veg: true, ing: ["1 apple", "1 tbsp peanut butter"], how: "" },
+    { name: "Carrots & hummus", kcal: 160, p: 5, veg: true, ing: ["2 carrots", "3 tbsp hummus"], how: "" },
+    { name: "Handful of mixed nuts", kcal: 180, p: 6, veg: true, ing: ["30 g unsalted nuts"], how: "" },
+    { name: "Skyr with cinnamon", kcal: 140, p: 17, veg: true, ing: ["150 g skyr", "Cinnamon"], how: "" },
+    { name: "2 boiled eggs", kcal: 150, p: 12, veg: true, ing: ["2 eggs", "Pinch of salt & pepper"], how: "" },
+    { name: "Edamame with sea salt", kcal: 170, p: 14, veg: true, ing: ["150 g edamame"], how: "" },
+    { name: "Banana & a few almonds", kcal: 190, p: 5, veg: true, ing: ["1 banana", "10 almonds"], how: "" },
+    { name: "Rice cakes with cottage cheese", kcal: 160, p: 12, veg: true, ing: ["2 rice cakes", "80 g cottage cheese", "Tomato"], how: "" },
+    { name: "Dark chocolate & berries", kcal: 170, p: 3, veg: true, ing: ["20 g 70%+ dark chocolate", "1 cup berries"], how: "" },
+    { name: "Roasted chickpeas", kcal: 180, p: 9, veg: true, ing: ["½ can chickpeas, roasted with paprika"], how: "" },
+    { name: "Kefir & an orange", kcal: 170, p: 9, veg: true, ing: ["250 ml kefir", "1 orange"], how: "" },
+    { name: "Cucumber & cheese bites", kcal: 150, p: 10, veg: true, ing: ["1 cucumber", "30 g cheese"], how: "" },
+  ],
+};
+
+const SLOTS = [
+  { key: "breakfast", label: "Breakfast", time: "7:00–9:00" },
+  { key: "snack1",    label: "Morning snack", time: "10:30", pool: "snack" },
+  { key: "lunch",     label: "Lunch",     time: "12:00–14:00" },
+  { key: "snack",     label: "Afternoon snack", time: "16:00" },
+  { key: "dinner",    label: "Dinner",    time: "18:30–20:00" },
+];
+
+const TIPS = [
+  "Fill half your plate with vegetables at lunch and dinner.",
+  "Eat slowly — it takes about 20 minutes to feel full.",
+  "Drink a glass of water before each meal.",
+  "Prep tomorrow's breakfast tonight so you're not tempted to skip it.",
+  "Aim for 30 different plants a week — herbs, nuts and seeds count.",
+  "Swap sugary drinks for sparkling water with lemon or mint.",
+  "Include a protein source at every meal to stay full longer.",
+  "Take a 10-minute walk after dinner to help digestion and blood sugar.",
+  "Cook a double portion tonight — tomorrow's lunch is solved.",
+  "Read labels: watch for added sugar and salt in sauces and bread.",
+  "Choose whole grains (brown rice, oats, wholegrain bread) over refined ones.",
+  "Have oily fish 1–2 times a week for omega-3s.",
+  "Keep washed fruit on the counter where you can see it.",
+  "Try to finish eating 2–3 hours before bed for better sleep.",
+  "Use herbs and spices instead of extra salt.",
+  "Mindful eating: put your phone away during meals.",
+  "Legumes (beans, lentils, chickpeas) are cheap, filling, and full of fibre.",
+  "Don't drink your calories — juices and lattes add up quickly.",
+  "Get 7–9 hours of sleep; poor sleep increases cravings.",
+  "One treat isn't failure — just get back on plan at the next meal.",
+];
+
+// ---------- Deterministic daily selection ----------
+// Each category is shuffled with a fixed seed, then walked one item per day,
+// so every meal appears once before any repeats and the plan is stable for a given date.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffled(arr, seed) {
+  const r = mulberry32(seed), a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const dayNumber = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+function cycleOrder(pool, seed, cycle) {
+  // reshuffle each cycle so the order varies over time
+  const order = shuffled(pool, seed * 1000 + cycle);
+  // never repeat a meal across the boundary between two cycles
+  const prev = shuffled(pool, seed * 1000 + cycle - 1);
+  if (order.length > 1 && order[0] === prev[prev.length - 1]) [order[0], order[1]] = [order[1], order[0]];
+  return order;
+}
+function pick(slot, day, pref, offset = 0) {
+  let pool = MEALS[slot.pool || slot.key];
+  if (pref === "veg") pool = pool.filter(m => m.veg);
+  const seed = { breakfast: 11, snack1: 17, lunch: 23, dinner: 37, snack: 41 }[slot.key] + (pref === "veg" ? 7 : 0);
+  const n = pool.length;
+  const order = cycleOrder(pool, seed, Math.floor(day / n));
+  return order[(((day + offset) % n) + n) % n];
+}
+function planFor(date, pref) {
+  const day = dayNumber(date);
+  const plan = {};
+  for (const s of SLOTS) plan[s.key] = pick(s, day, pref);
+  // both snacks walk the same shuffled sequence, half a cycle apart, so they never match on the same day
+  const snacks = SLOTS.find(s => s.key === "snack");
+  const half = Math.floor(MEALS.snack.filter(m => pref !== "veg" || m.veg).length / 2);
+  plan.snack1 = pick(snacks, day, pref, half);
+  if (plan.snack1 === plan.snack) plan.snack1 = pick(snacks, day, pref, half + 1);
+  return plan;
+}
+
+// ---------- Storage (safe) ----------
+const store = {
+  get(k, fallback) { try { const v = localStorage.getItem(k); return v === null ? fallback : JSON.parse(v); } catch { return fallback; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+// ---------- Rendering ----------
+let current = new Date();
+let pref = store.get("pref", "all");
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function render() {
+  const key = isoDate(current);
+  const plan = planFor(current, pref);
+  const done = store.get("done:" + key, {});
+  const todayKey = isoDate(new Date());
+
+  $("dateLabel").textContent = current.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+    + (key === todayKey ? " · today" : "");
+  $("pref").value = pref;
+
+  const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
+  const eaten = SLOTS.filter(s => done[s.key]).length;
+  $("summary").innerHTML = `
+    <div class="stat"><b>~${total.kcal}</b><span>kcal planned</span></div>
+    <div class="stat"><b>~${total.p} g</b><span>protein</span></div>
+    <div class="stat"><b>${eaten} / ${SLOTS.length}</b><span>meals eaten</span></div>`;
+
+  $("meals").innerHTML = SLOTS.map(s => {
+    const m = plan[s.key];
+    return `<article class="meal ${done[s.key] ? "done" : ""}">
+      <div class="meal-top"><span class="slot">${s.label}</span><span class="time">${s.time}</span></div>
+      <h3>${esc(m.name)}</h3>
+      <div class="meta">~${m.kcal} kcal · ${m.p} g protein${m.veg ? " · 🌱" : ""}</div>
+      <ul>${m.ing.map(i => `<li>${esc(i)}</li>`).join("")}</ul>
+      ${m.how ? `<p class="how">${esc(m.how)}</p>` : ""}
+      <label><input type="checkbox" data-slot="${s.key}" ${done[s.key] ? "checked" : ""}> Eaten</label>
+    </article>`;
+  }).join("");
+
+  $("meals").querySelectorAll("input[type=checkbox]").forEach(cb => cb.addEventListener("change", () => {
+    const d = store.get("done:" + key, {});
+    d[cb.dataset.slot] = cb.checked;
+    store.set("done:" + key, d);
+    render();
+  }));
+
+  $("tip").textContent = TIPS[((dayNumber(current) % TIPS.length) + TIPS.length) % TIPS.length];
+
+  const glasses = store.get("water:" + key, 0);
+  $("water").innerHTML = Array.from({ length: 8 }, (_, i) =>
+    `<button class="${i < glasses ? "on" : ""}" data-i="${i}" aria-label="Glass ${i + 1}">🥛</button>`).join("");
+  $("water").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    const i = +b.dataset.i;
+    store.set("water:" + key, glasses === i + 1 ? i : i + 1);
+    render();
+  }));
+
+  const items = [...new Set(SLOTS.flatMap(s => plan[s.key].ing))];
+  $("shop").innerHTML = items.map(i => `<li>${esc(i)}</li>`).join("");
+
+  // Week overview (Mon–Sun containing current day)
+  const monday = new Date(current);
+  monday.setDate(current.getDate() - ((current.getDay() + 6) % 7));
+  let rows = `<tr><th>Day</th>${SLOTS.map(s => `<th>${s.label}</th>`).join("")}</tr>`;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const p = planFor(d, pref);
+    const k = isoDate(d);
+    rows += `<tr data-date="${k}" class="${k === key ? "today" : ""}">
+      <td><b>${d.toLocaleDateString(undefined, { weekday: "short" })}</b> ${d.getDate()}</td>
+      ${SLOTS.map(s => `<td>${esc(p[s.key].name)}</td>`).join("")}</tr>`;
+  }
+  $("week").innerHTML = rows;
+  $("week").querySelectorAll("tr[data-date]").forEach(tr => tr.addEventListener("click", () => {
+    const [y, m, d] = tr.dataset.date.split("-").map(Number);
+    current = new Date(y, m - 1, d);
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }));
+}
+
+function shift(n) { current = new Date(current); current.setDate(current.getDate() + n); render(); }
+$("prev").onclick = () => shift(-1);
+$("next").onclick = () => shift(1);
+$("today").onclick = () => { current = new Date(); render(); };
+$("pref").onchange = e => { pref = e.target.value; store.set("pref", pref); render(); };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "SELECT") return;
+  if (e.key === "ArrowLeft") shift(-1);
+  if (e.key === "ArrowRight") shift(1);
+});
+
+render();
+</script>
+</body>
+</html>
