@@ -66,14 +66,19 @@
   }
   .daynav.stuck { border-bottom-color: var(--border); box-shadow: 0 6px 12px -10px rgba(0,0,0,.35); }
   .daynav-head { display: flex; align-items: center; gap: 8px; }
-  .arrow { font-size: 1.5rem; line-height: 1; width: 44px; height: 44px; padding: 0; flex: none; border-radius: 50%; }
+  .arrow {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; padding: 0; flex: none; border-radius: 50%;
+  }
+  .arrow .ic { width: 22px; height: 22px; stroke-width: 1.8; vertical-align: 0; }
   .datepick {
     position: relative; flex: 1; min-width: 0; text-align: center; cursor: pointer;
     padding: 4px 8px; border-radius: 10px;
   }
   .datepick:hover { background: var(--accent-soft); }
-  .date-main { display: block; font-weight: 700; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .date-main::after { content: " ▾"; font-size: .7em; color: var(--muted); }
+  .date-main { display: flex; justify-content: center; align-items: center; gap: 4px; font-weight: 700; font-size: 1.05rem; }
+  .date-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .date-chev { width: 16px; height: 16px; color: var(--muted); stroke-width: 2; vertical-align: 0; }
   .date-rel { display: block; font-size: .82rem; color: var(--accent); font-weight: 600; min-height: 1.2em; }
   .datepick input {
     position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
@@ -121,6 +126,9 @@
   @media (max-width: 370px) {
     header h1 { font-size: 1.2rem; }
     .seg-icons label span { width: 32px; min-height: 32px; font-size: .95rem; }
+    .arrow { width: 40px; height: 40px; }
+    .date-main { font-size: .95rem; }
+    .daynav-head { gap: 4px; }
   }
   .meals.slide-l { animation: slideL .22s ease-out; }
   .meals.slide-r { animation: slideR .22s ease-out; }
@@ -199,7 +207,12 @@
   tr.today td { background: var(--accent-soft); }
   tr { cursor: pointer; }
   details { margin-top: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
-  summary { cursor: pointer; font-weight: 600; }
+  summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .sum-text { flex: 1; }
+  .sum-chev { width: 18px; height: 18px; color: var(--muted); stroke-width: 2; transition: transform .2s; }
+  details[open] .sum-chev { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { .sum-chev { transition: none; } }
   .shop { columns: 2 200px; font-size: .9rem; padding-left: 18px; }
   .meal label input { width: 20px; height: 20px; }
   /* Week overview: table on wide screens, stacked cards on phones */
@@ -228,6 +241,9 @@
   <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 8l4.5-3.2M12 12l6.8-5.1M12 16l8.4-5.5M12 20l8.1-5.5"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+  <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
   <symbol id="i-plate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2.8"/><path d="M3.5 3v5M5.5 3v5M3.5 8c0 1.2.5 2 1 2s1-.8 1-2M4.5 10v11"/><path d="M20.5 3c-1.4 1-2 3-2 6.5h2V21"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19.5C4.5 11 10 5 19.5 4.5 20 14 14 19.5 5 19.5z"/><path d="M5 19.5L13.5 11M9.5 15h3.5M11.5 13v-3"/></symbol>
@@ -250,13 +266,13 @@
 
   <nav class="daynav" aria-label="Choose a day">
     <div class="daynav-head">
-      <button id="prev" class="arrow" aria-label="Previous day">‹</button>
+      <button id="prev" class="arrow" aria-label="Previous day"><svg class="ic" aria-hidden="true"><use href="#i-chev-left"/></svg></button>
       <label class="datepick" title="Pick a date">
-        <span class="date-main" id="dateLabel"></span>
+        <span class="date-main"><span class="date-text" id="dateLabel"></span><svg class="ic date-chev" aria-hidden="true"><use href="#i-chev-down"/></svg></span>
         <span class="date-rel" id="rel"></span>
         <input type="date" id="datePicker" aria-label="Pick a date">
       </label>
-      <button id="next" class="arrow" aria-label="Next day">›</button>
+      <button id="next" class="arrow" aria-label="Next day"><svg class="ic" aria-hidden="true"><use href="#i-chev-right"/></svg></button>
     </div>
     <div class="days" id="days" role="tablist"></div>
     <div class="back-row" id="backRow" hidden><button id="today" class="chip"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg> Back to today</button></div>
@@ -280,7 +296,7 @@
   </div>
 
   <details>
-    <summary><svg class="ic" aria-hidden="true"><use href="#i-basket"/></svg> Shopping list for this day</summary>
+    <summary><svg class="ic" aria-hidden="true"><use href="#i-basket"/></svg> <span class="sum-text">Shopping list for this day</span><svg class="ic sum-chev" aria-hidden="true"><use href="#i-chev-down"/></svg></summary>
     <ul class="shop" id="shop"></ul>
   </details>
 
@@ -643,7 +659,7 @@ function renderNav(key, todayKey) {
   const diff = dayNumber(current) - dayNumber(new Date());
   const sameYear = current.getFullYear() === new Date().getFullYear();
   $("dateLabel").textContent = current.toLocaleDateString(undefined,
-    { weekday: "long", day: "numeric", month: window.innerWidth < 400 ? "short" : "long", ...(sameYear ? {} : { year: "numeric" }) });
+    { weekday: window.innerWidth < 370 ? "short" : "long", day: "numeric", month: window.innerWidth < 400 ? "short" : "long", ...(sameYear ? {} : { year: "numeric" }) });
   $("rel").textContent = relativeLabel(diff);
   $("datePicker").value = key;
   $("backRow").hidden = diff === 0;
