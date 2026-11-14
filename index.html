@@ -59,18 +59,31 @@
   h1 { margin: 0; font-size: 1.6rem; }
 
   /* ----- Day navigation ----- */
-  .daynav {
-    position: sticky; top: 0; z-index: 10;
-    margin: 12px -16px 0; padding: 10px 16px 10px;
-    background: var(--bg); border-bottom: 1px solid transparent;
+  :root { --ease: cubic-bezier(.22, .8, .24, 1); --dur: .32s; }
+  /* The outer box keeps its full height while scrolled (so the page never jumps);
+     only the inner bar shrinks, and the empty part lets taps through. */
+  .daynav { position: sticky; top: 0; z-index: 10; margin: 12px -16px 0; pointer-events: none; }
+  .daynav-in {
+    pointer-events: auto; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid transparent;
+    transition: padding var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
-  .daynav.stuck { border-bottom-color: var(--border); box-shadow: 0 6px 12px -10px rgba(0,0,0,.35); }
+  .daynav.stuck .daynav-in { border-bottom-color: var(--border); box-shadow: 0 8px 16px -14px rgba(0,0,0,.45); }
+  .daynav.compact .daynav-in { padding-top: 6px; padding-bottom: 8px; }
   .daynav-head { display: flex; align-items: center; gap: 8px; }
   .arrow {
     display: inline-flex; align-items: center; justify-content: center;
     width: 44px; height: 44px; padding: 0; flex: none; border-radius: 50%;
   }
-  .arrow .ic { width: 22px; height: 22px; stroke-width: 1.8; vertical-align: 0; }
+  .arrow .ic { width: 22px; height: 22px; stroke-width: 1.8; vertical-align: 0; transition: width var(--dur) var(--ease), height var(--dur) var(--ease); }
+  .arrow { transition: width var(--dur) var(--ease), height var(--dur) var(--ease), border-color .2s; }
+  .daynav.compact .arrow { width: 34px; height: 34px; }
+  .daynav.compact .arrow .ic { width: 18px; height: 18px; }
+  .date-main { transition: font-size var(--dur) var(--ease); }
+  .daynav.compact .date-main { font-size: .95rem; }
+  .date-rel { max-height: 1.4em; overflow: hidden; transition: max-height var(--dur) var(--ease), opacity .2s var(--ease); }
+  .daynav.compact .date-rel { max-height: 0; opacity: 0; }
+  .datepick { transition: padding var(--dur) var(--ease); }
+  .daynav.compact .datepick { padding-top: 0; padding-bottom: 0; }
   .datepick {
     position: relative; flex: 1; min-width: 0; text-align: center; cursor: pointer;
     padding: 4px 8px; border-radius: 10px;
@@ -84,7 +97,16 @@
     position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
     border: 0; padding: 0; margin: 0; font-size: 16px; /* 16px stops iOS zoom */
   }
-  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; transition: margin-top var(--dur) var(--ease); }
+  .daynav.compact .days { margin-top: 6px; }
+  .day, .day .wd, .day .dn, .day .bar { transition: padding var(--dur) var(--ease), font-size var(--dur) var(--ease),
+    max-height var(--dur) var(--ease), opacity .2s var(--ease), margin var(--dur) var(--ease), border-radius var(--dur) var(--ease); }
+  .day .wd, .day .bar { max-height: 1.2em; }
+  .daynav.compact .day { padding: 3px 0 4px; border-radius: 10px; }
+  .daynav.compact .day .wd { font-size: .58rem; }
+  .daynav.compact .day .dn { font-size: .9rem; }
+  .daynav.compact .day .bar { max-height: 0; opacity: 0; margin-top: 0; }
+  .daynav.compact .day.is-today::before { top: 2px; right: 4px; width: 5px; height: 5px; }
   .day {
     display: flex; flex-direction: column; align-items: center; gap: 1px;
     padding: 6px 0 7px; border-radius: 12px; min-height: 0; position: relative;
@@ -102,7 +124,11 @@
   .day.sel .bar { background: rgba(255,255,255,.35); }
   .day.sel .bar i { background: var(--bg); }
   .day.sel.is-today::before { background: var(--bg); }
-  .back-row { display: flex; justify-content: center; margin-top: 8px; }
+  .back-row {
+    display: flex; justify-content: center; margin-top: 8px; max-height: 44px; overflow: hidden;
+    transition: max-height var(--dur) var(--ease), margin-top var(--dur) var(--ease), opacity .2s var(--ease);
+  }
+  .daynav.compact .back-row { max-height: 0; margin-top: 0; opacity: 0; pointer-events: none; }
   .back-row[hidden] { display: none; }
   .chip {
     font-size: .85rem; min-height: 32px; padding: 4px 14px; border-radius: 999px;
@@ -125,11 +151,21 @@
     .date-main { font-size: .95rem; }
     .daynav-head { gap: 4px; }
   }
-  .meals.slide-l { animation: slideL .22s ease-out; }
-  .meals.slide-r { animation: slideR .22s ease-out; }
-  @keyframes slideL { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
-  @keyframes slideR { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .meals.slide-l, .meals.slide-r { animation: none; } }
+  /* Never let a sliding panel make the page scroll sideways (clip keeps sticky working) */
+  html, body { overflow-x: clip; }
+  /* Motion: day change slides the open tab; tab change fades it up; taps "pop" */
+  .panel.slide-l { animation: slideL .38s var(--ease) both; }
+  .panel.slide-r { animation: slideR .38s var(--ease) both; }
+  .panel.enter { animation: fadeUp .3s var(--ease) both; }
+  @keyframes slideL { from { opacity: .2; transform: translate3d(12px, 0, 0); } to { opacity: 1; transform: none; } }
+  @keyframes slideR { from { opacity: .2; transform: translate3d(-12px, 0, 0); } to { opacity: 1; transform: none; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: none; } }
+  .pop { animation: pop .34s var(--ease); }
+  @keyframes pop { 0% { transform: scale(.82); } 55% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .panel.slide-l, .panel.slide-r, .panel.enter, .pop { animation: none; }
+    .daynav *, .daynav-in { transition: none !important; }
+  }
   button {
     font: inherit; color: var(--text); background: var(--card);
     border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
@@ -157,7 +193,7 @@
   .seg-thumb {
     position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n, 2)); border-radius: 999px;
     background: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.18);
-    transition: transform .25s cubic-bezier(.3,.7,.4,1);
+    transition: transform .36s var(--ease);
   }
   .seg .seg-thumb { transform: translateX(calc(var(--i, 0) * 100%)); }
   /* Compact icon-only variant (theme switch in the header) */
@@ -398,7 +434,8 @@
     </div>
   </header>
 
-  <nav class="daynav" aria-label="Choose a day">
+  <nav class="daynav" id="daynav" aria-label="Choose a day">
+   <div class="daynav-in">
     <div class="daynav-head">
       <button id="prev" class="arrow" aria-label="Previous day"><svg class="ic" aria-hidden="true"><use href="#i-chev-left"/></svg></button>
       <label class="datepick" title="Pick a date">
@@ -410,6 +447,7 @@
     </div>
     <div class="days" id="days" role="tablist"></div>
     <div class="back-row" id="backRow" hidden><button id="today" class="chip"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg> Back to today</button></div>
+   </div>
   </nav>
 
   <div class="controls">
@@ -746,6 +784,7 @@ function parseIso(str) {
 let current = parseIso(location.hash.slice(1)) || new Date();
 let pref = store.get("pref", "all");
 const $ = id => document.getElementById(id);
+let popSel = null; // element to "pop" after the next render (the thing just tapped)
 const openHow = new Set(); // "How to make" panels the user has opened (kept across re-renders)
 const icon = (name, cls = "ic") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -810,6 +849,7 @@ function render() {
     const d = store.get("done:" + key, {});
     d[b.dataset.slot] = !d[b.dataset.slot];
     store.set("done:" + key, d);
+    popSel = `.eat[data-slot="${b.dataset.slot}"]`;
     render();
   }));
   $("meals").querySelectorAll("details.how").forEach(dt => dt.addEventListener("toggle", () => {
@@ -819,6 +859,7 @@ function render() {
   renderWater(key, todayKey);
   renderShop(key, todayKey);
   renderWeek(key, todayKey);
+  if (popSel) { const el = document.querySelector(popSel); if (el) el.classList.add("pop"); popSel = null; }
 }
 
 // ---------- Water & tips ----------
@@ -854,6 +895,7 @@ $("water").addEventListener("click", e => {
   const b = e.target.closest("button[data-i]"); if (!b) return;
   const k = isoDate(current), g = store.get("water:" + k, 0), i = +b.dataset.i;
   store.set("water:" + k, g === i + 1 ? i : i + 1);
+  popSel = `#water button[data-i="${i}"]`;
   render();
 });
 $("waterWeek").addEventListener("click", e => {
@@ -918,6 +960,7 @@ $("shop").addEventListener("click", e => {
   const k = "shop:" + b.dataset.date, got = store.get(k, {});
   got[b.dataset.id] = !got[b.dataset.id];
   store.set(k, got);
+  popSel = `.shop-item[data-date="${b.dataset.date}"][data-id="${b.dataset.id}"] .ic`;
   render();
 });
 $("shopMode").addEventListener("change", e => {
@@ -930,6 +973,7 @@ const TABS = ["menu", "week", "shop", "water"];
 let tab = store.get("tab", "menu");
 if (TABS.indexOf(tab) === -1) tab = "menu";
 function showTab(t, scroll) {
+  const changed = t !== tab;
   tab = t; store.set("tab", t);
   TABS.forEach(x => {
     $("tab-" + x).hidden = x !== t;
@@ -937,10 +981,11 @@ function showTab(t, scroll) {
     b.setAttribute("aria-selected", x === t);
     b.tabIndex = x === t ? 0 : -1;
   });
+  if (changed && scroll) animatePanel("enter");
   if (scroll) {
     // Bring the top of the section into view without jumping past the day bar.
-    const nav = document.querySelector(".daynav");
-    const top = $("tab-" + t).getBoundingClientRect().top + window.scrollY - nav.offsetHeight - 12;
+    const bar = document.querySelector(".daynav-in");
+    const top = $("tab-" + t).getBoundingClientRect().top + window.scrollY - bar.offsetHeight - 12;
     if (window.scrollY > top) window.scrollTo({ top: Math.max(0, top) });
   }
 }
@@ -1059,10 +1104,18 @@ function go(date, dir) {
   current = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   render();
   const delta = dir || Math.sign(dayNumber(current) - before);
-  const meals = $("meals");
-  meals.classList.remove("slide-l", "slide-r");
-  if (delta) { void meals.offsetWidth; meals.classList.add(delta > 0 ? "slide-l" : "slide-r"); }
+  if (delta) animatePanel(delta > 0 ? "slide-l" : "slide-r");
 }
+// Restart a CSS animation on the open tab (removing the class first so it can replay).
+function animatePanel(cls) {
+  const panel = $("tab-" + tab);
+  panel.classList.remove("slide-l", "slide-r", "enter");
+  void panel.offsetWidth;
+  panel.classList.add(cls);
+}
+document.addEventListener("animationend", e => {
+  if (e.target.classList) e.target.classList.remove("slide-l", "slide-r", "enter", "pop");
+});
 function shift(n) { const d = new Date(current); d.setDate(d.getDate() + n); go(d, n); }
 $("prev").onclick = () => shift(-1);
 $("next").onclick = () => shift(1);
@@ -1091,11 +1144,33 @@ $("datePicker").addEventListener("click", e => { try { e.target.showPicker && e.
   }, { passive: true });
 })();
 
-// Show a divider under the day bar once it sticks to the top.
-window.addEventListener("scroll", () => {
-  const nav = document.querySelector(".daynav");
-  nav.classList.toggle("stuck", nav.getBoundingClientRect().top <= 0 && window.scrollY > 0);
-}, { passive: true });
+// Day bar: show a divider once it sticks, and shrink it after scrolling a little further.
+// The outer box's height is locked while compact so the content below never moves.
+(() => {
+  const nav = $("daynav");
+  let compact = false, ticking = false;
+  const navTop = () => document.querySelector("header").getBoundingClientRect().bottom + window.scrollY + 12;
+  function setCompact(on) {
+    if (on === compact) return;
+    compact = on;
+    if (on) nav.style.height = nav.getBoundingClientRect().height + "px";
+    nav.classList.toggle("compact", on);
+  }
+  nav.addEventListener("transitionend", e => {
+    // After expanding, release the locked height so it can follow its content again.
+    if (!compact && e.target === nav.querySelector(".daynav-in")) nav.style.height = "";
+  });
+  function update() {
+    ticking = false;
+    const y = window.scrollY, top = navTop();
+    nav.classList.toggle("stuck", y > 0 && y >= top - 1);
+    if (!compact && y > top + 48) setCompact(true);
+    else if (compact && y < top + 8) setCompact(false);
+  }
+  window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener("resize", () => { if (!compact) nav.style.height = ""; update(); });
+  update();
+})();
 
 // If the page was left open on "today", roll over to the new day after midnight.
 document.addEventListener("visibilitychange", () => {
