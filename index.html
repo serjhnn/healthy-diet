@@ -103,7 +103,12 @@
     font-size: .85rem; min-height: 32px; padding: 4px 14px; border-radius: 999px;
     background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600;
   }
-  #theme { font-size: .85rem; min-height: 36px; padding: 4px 10px; }
+  header { flex-wrap: nowrap; }
+  header h1 { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 370px) {
+    header h1 { font-size: 1.2rem; }
+    .seg-icons label span { width: 32px; min-height: 32px; font-size: .95rem; }
+  }
   .meals.slide-l { animation: slideL .22s ease-out; }
   .meals.slide-r { animation: slideR .22s ease-out; }
   @keyframes slideL { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
@@ -119,7 +124,7 @@
   .controls { display: flex; justify-content: center; margin: 14px 0 4px; }
   /* Diet switch: segmented control with a sliding highlight */
   .seg {
-    position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 360px;
+    position: relative; display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); width: 100%; max-width: 360px;
     padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--border);
     box-shadow: inset 0 1px 2px rgba(0,0,0,.06);
   }
@@ -134,11 +139,16 @@
   .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (hover: hover) { .seg label:hover input:not(:checked) + span { color: var(--text); } }
   .seg-thumb {
-    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px;
+    position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n, 2)); border-radius: 999px;
     background: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.18);
     transition: transform .25s cubic-bezier(.3,.7,.4,1);
   }
-  .seg[data-value="veg"] .seg-thumb { transform: translateX(100%); }
+  .seg .seg-thumb { transform: translateX(calc(var(--i, 0) * 100%)); }
+  /* Compact icon-only variant (theme switch in the header) */
+  .seg-icons { width: auto; flex: none; padding: 3px; }
+  .seg-icons .seg-thumb { top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / var(--n, 3)); }
+  .seg-icons label span { min-height: 34px; width: 38px; padding: 0; font-size: 1.05rem; }
+  .seg-icons input:not(:checked) + span { filter: grayscale(.6); opacity: .75; }
   @media (prefers-reduced-motion: reduce) { .seg-thumb, .seg label span { transition: none; } }
   .summary {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 20px;
@@ -201,8 +211,13 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>🥗 <span id="title">Today's Menu</span></h1>
-    <button id="theme" aria-label="Change theme"></button>
+    <h1>🥗 Daily Menu</h1>
+    <div class="seg seg-icons" id="themeSeg" role="radiogroup" aria-label="Theme" style="--n:3">
+      <span class="seg-thumb" aria-hidden="true"></span>
+      <label title="Auto (follow device)"><input type="radio" name="theme" value="auto" aria-label="Auto theme"><span>🌓</span></label>
+      <label title="Light"><input type="radio" name="theme" value="light" aria-label="Light theme"><span>☀️</span></label>
+      <label title="Dark"><input type="radio" name="theme" value="dark" aria-label="Dark theme"><span>🌙</span></label>
+    </div>
   </header>
 
   <nav class="daynav" aria-label="Choose a day">
@@ -220,7 +235,7 @@
   </nav>
 
   <div class="controls">
-    <div class="seg" id="pref" role="radiogroup" aria-label="Diet">
+    <div class="seg" id="pref" role="radiogroup" aria-label="Diet" style="--n:2">
       <span class="seg-thumb" aria-hidden="true"></span>
       <label><input type="radio" name="pref" value="all"><span>🍽️ Everything</span></label>
       <label><input type="radio" name="pref" value="veg"><span>🌱 Vegetarian</span></label>
@@ -527,8 +542,7 @@ function render() {
   const todayKey = isoDate(new Date());
 
   renderNav(key, todayKey);
-  $("pref").dataset.value = pref;
-  $("pref").querySelectorAll("input").forEach(r => { r.checked = r.value === pref; });
+  setSeg($("pref"), pref);
 
   const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
   const eaten = SLOTS.filter(s => done[s.key]).length;
@@ -602,7 +616,6 @@ function renderNav(key, todayKey) {
   $("dateLabel").textContent = current.toLocaleDateString(undefined,
     { weekday: "long", day: "numeric", month: window.innerWidth < 400 ? "short" : "long", ...(sameYear ? {} : { year: "numeric" }) });
   $("rel").textContent = relativeLabel(diff);
-  $("title").textContent = diff === 0 ? "Today's Menu" : diff === 1 ? "Tomorrow's Menu" : diff === -1 ? "Yesterday's Menu" : "Menu";
   $("datePicker").value = key;
   $("backRow").hidden = diff === 0;
 
@@ -691,14 +704,21 @@ window.addEventListener("hashchange", () => {
   const d = parseIso(location.hash.slice(1)) || new Date();
   if (isoDate(d) !== isoDate(current)) go(d);
 });
-// Theme: auto (follow system) → light → dark
-const THEMES = { auto: "🌓 Auto", light: "☀️ Light", dark: "🌙 Dark" };
+// Shared helper for the pill switches: tick the right radio and slide the highlight.
+function setSeg(el, value) {
+  const inputs = [...el.querySelectorAll("input")];
+  inputs.forEach(r => { r.checked = r.value === value; });
+  el.style.setProperty("--i", Math.max(0, inputs.findIndex(r => r.value === value)));
+  el.dataset.value = value;
+}
+
+// Theme: auto (follow system) / light / dark
 let theme = store.get("theme", "auto");
+if (["auto", "light", "dark"].indexOf(theme) === -1) theme = "auto";
 function applyTheme() {
   const root = document.documentElement;
   if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
-  $("theme").textContent = THEMES[theme];
-  $("theme").title = "Theme: " + theme + " (tap to change)";
+  setSeg($("themeSeg"), theme);
   // Cosmetic only (browser bar colour): never let it break the page on older browsers.
   try {
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
@@ -707,11 +727,12 @@ function applyTheme() {
     });
   } catch (e) {}
 }
-$("theme").onclick = () => {
-  theme = { auto: "light", light: "dark", dark: "auto" }[theme];
+$("themeSeg").addEventListener("change", e => {
+  if (e.target.name !== "theme") return;
+  theme = e.target.value;
   store.set("theme", theme);
   applyTheme();
-};
+});
 applyTheme();
 $("pref").addEventListener("change", e => {
   if (e.target.name !== "pref") return;
