@@ -116,9 +116,6 @@
   }
   .logo { color: var(--accent); }
   .logo .ic { width: 1.1em; height: 1.1em; stroke-width: 1.5; vertical-align: -.15em; }
-  .hd { display: inline-flex; align-items: center; gap: 6px; }
-  .hd .ic { color: var(--accent); }
-  .shop-box summary .ic { color: var(--accent); margin-right: 2px; }
   .chip .ic { width: 1.05em; height: 1.05em; vertical-align: -.18em; }
   header h1 { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @media (max-width: 370px) {
@@ -169,12 +166,6 @@
   .seg-icons label span { min-height: 34px; width: 38px; padding: 0; font-size: 1.05rem; }
   .seg-icons .ic { width: 1.25em; height: 1.25em; vertical-align: 0; }
   @media (prefers-reduced-motion: reduce) { .seg-thumb, .seg label span { transition: none; } }
-  .summary {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 20px;
-  }
-  .stat { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; }
-  .stat b { display: block; font-size: 1.3rem; }
-  .stat span { font-size: .85rem; color: var(--muted); }
   .meals { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; align-items: start; }
   .meta { font-size: .85rem; color: var(--muted); }
   .meal {
@@ -234,22 +225,81 @@
   .meal.done h3 { color: var(--done); }
   .meal.done .meal-badge { background: transparent; border: 1px dashed var(--border); color: var(--done); }
   @media (prefers-reduced-motion: reduce) { .meal, .eat, .how-chev { transition: none; } }
-  .tip {
-    margin: 20px 0; padding: 14px 16px; border-left: 4px solid var(--accent);
-    background: var(--card); border-radius: 0 10px 10px 0;
-  }
   .water { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .water button { padding: 4px 8px; font-size: 1.2rem; min-width: 44px; color: var(--muted); opacity: .55; }
   .water button.on { opacity: 1; color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
   h2 { font-size: 1.2rem; margin: 28px 0 10px; }
   /* ----- Week at a glance ----- */
-  .week { margin-top: 32px; }
-  .week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .week-head h2 { margin: 0; }
-  .week-range { font-size: .88rem; color: var(--muted); font-weight: 600; }
-  .week-stats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
-  .week-stats .fact { background: var(--card); }
-  .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  /* ----- Tabs & shared section layout ----- */
+  .tabs {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 14px auto 0; max-width: 520px;
+    padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--border);
+  }
+  .tabs button {
+    display: flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 999px;
+    background: transparent; color: var(--muted); font-weight: 600; font-size: .92rem; min-height: 40px; padding: 0 10px;
+    -webkit-tap-highlight-color: transparent; transition: background .2s, color .2s;
+  }
+  .tabs button .ic { width: 19px; height: 19px; vertical-align: 0; }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--bg); }
+  @media (hover: hover) { .tabs button:not([aria-selected="true"]):hover { color: var(--text); } }
+  .panel { margin-top: 18px; }
+  .panel[hidden] { display: none; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .sec-head h2 { margin: 0; font-size: 1.25rem; }
+  .sec-range { font-size: .88rem; color: var(--muted); font-weight: 600; }
+  .sec-stats { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+  .sec-stats .fact { background: var(--card); }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+  .card.sel { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .card-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .95rem; flex-wrap: wrap; }
+  .card-title > .ic { color: var(--accent); width: 20px; height: 20px; vertical-align: 0; }
+  .card-sub { font-size: .8rem; color: var(--muted); font-weight: 500; margin-left: auto; }
+  .card-meal { font-size: .82rem; color: var(--muted); margin: 2px 0 0 28px; }
+  .tip-card p { margin: 8px 0 0; }
+
+  /* Shopping */
+  .shop-mode { display: flex; margin-top: 10px; }
+  .seg-small { max-width: 280px; }
+  .seg-small label span { min-height: 32px; font-size: .85rem; }
+  .shop-items { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+  .shop-item {
+    width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: transparent;
+    padding: 6px 4px; min-height: 36px; border-radius: 8px; font-size: .9rem; -webkit-tap-highlight-color: transparent;
+  }
+  .shop-item .ic { width: 20px; height: 20px; color: var(--muted); flex: none; vertical-align: 0; }
+  .shop-item[aria-pressed="true"] .ic { color: var(--accent); }
+  .shop-item[aria-pressed="true"] span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--border); }
+  @media (hover: hover) { .shop-item:hover { background: var(--bg); } }
+
+  /* Water */
+  .water { margin-top: 10px; }
+  .wbars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
+  .wbar {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; background: transparent; padding: 2px 0;
+    min-height: 0; font-size: .72rem; color: var(--muted); -webkit-tap-highlight-color: transparent;
+  }
+  .wbar .col { width: 100%; max-width: 30px; height: 80px; border-radius: 8px; background: var(--bg); position: relative; overflow: hidden; border: 1px solid var(--border); }
+  .wbar .col i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent); opacity: .75; border-radius: 0 0 7px 7px; }
+  .wbar.goal .col i { opacity: 1; }
+  .wbar b { font-size: .78rem; color: var(--text); }
+  .wbar.sel .col { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .wbar.today span { color: var(--accent); font-weight: 700; }
+
+  /* Phones: tabs become an app-style bottom bar */
+  @media (max-width: 640px) {
+    body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .tabs {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0; max-width: none;
+      border-radius: 0; border: 0; border-top: 1px solid var(--border); padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      box-shadow: 0 -6px 16px -12px rgba(0,0,0,.4);
+    }
+    .tabs button { flex-direction: column; gap: 2px; font-size: .7rem; min-height: 52px; border-radius: 14px; padding: 0 2px; }
+    .tabs button .ic { width: 22px; height: 22px; }
+    .tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
+    .panel { margin-top: 14px; }
+  }
   .wday {
     display: block; color: inherit; text-decoration: none; background: var(--card);
     border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
@@ -297,22 +347,13 @@
     .wday.past { padding-top: 8px; padding-bottom: 8px; }
   }
   tr { cursor: pointer; }
-  details.shop-box { margin-top: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
-  .shop-box summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; list-style: none; }
   summary::-webkit-details-marker { display: none; }
-  .sum-text { flex: 1; }
-  .sum-chev { width: 18px; height: 18px; color: var(--muted); stroke-width: 2; transition: transform .2s; }
-  .shop-box[open] .sum-chev { transform: rotate(180deg); }
-  @media (prefers-reduced-motion: reduce) { .sum-chev { transition: none; } }
-  .shop { columns: 2 200px; font-size: .9rem; padding-left: 18px; }
   @media (max-width: 640px) {
     .wrap { padding: 16px 16px 40px; }
     h1 { font-size: 1.4rem; }
     header { align-items: flex-start; }
-    .stat { padding: 8px 10px; }
-    .stat b { font-size: 1.1rem; }
   }
-  footer { margin-top: 32px; font-size: .8rem; color: var(--muted); }
+  footer { margin-top: 28px; font-size: .8rem; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -334,6 +375,9 @@
   <symbol id="i-protein" viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-steps" viewBox="0 0 24 24"><path d="M6 3.5h9.5l3 3v14H6z"/><path d="M15.5 3.5v3h3"/><path d="M9 11h6.5M9 14h6.5M9 17h4"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3.5"/></symbol>
+  <symbol id="i-box-check" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3.5" fill="currentColor" fill-opacity=".18"/><path d="M8.5 12.3l2.5 2.5 4.6-5"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
   <symbol id="i-plate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2.8"/><path d="M3.5 3v5M5.5 3v5M3.5 8c0 1.2.5 2 1 2s1-.8 1-2M4.5 10v11"/><path d="M20.5 3c-1.4 1-2 3-2 6.5h2V21"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19.5C4.5 11 10 5 19.5 4.5 20 14 14 19.5 5 19.5z"/><path d="M5 19.5L13.5 11M9.5 15h3.5M11.5 13v-3"/></symbol>
@@ -376,27 +420,55 @@
     </div>
   </div>
 
-  <div class="summary" id="summary"></div>
-  <div class="meals" id="meals"></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="menu" id="tab-btn-menu" aria-controls="tab-menu"><svg class="ic" aria-hidden="true"><use href="#i-plate"/></svg><span>Menu</span></button>
+    <button role="tab" data-tab="week" id="tab-btn-week" aria-controls="tab-week"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg><span>Week</span></button>
+    <button role="tab" data-tab="shop" id="tab-btn-shop" aria-controls="tab-shop"><svg class="ic" aria-hidden="true"><use href="#i-basket"/></svg><span>Shopping</span></button>
+    <button role="tab" data-tab="water" id="tab-btn-water" aria-controls="tab-water"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg><span>Water</span></button>
+  </nav>
 
-  <div class="tip">
-    <strong class="hd"><svg class="ic" aria-hidden="true"><use href="#i-bulb"/></svg> Tip of the day:</strong> <span id="tip"></span>
-    <div style="margin-top:10px"><strong class="hd"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg> Water</strong> <span class="meta">(tap a glass, goal 8)</span></div>
-    <div class="water" id="water"></div>
-  </div>
+  <section class="panel" id="tab-menu" role="tabpanel" aria-labelledby="tab-btn-menu">
+    <div class="sec-head"><h2>Menu</h2><span class="sec-range" id="menuDate"></span></div>
+    <div class="sec-stats" id="summary"></div>
+    <div class="meals" id="meals"></div>
+  </section>
 
-  <details class="shop-box">
-    <summary><svg class="ic" aria-hidden="true"><use href="#i-basket"/></svg> <span class="sum-text">Shopping list for this day</span><svg class="ic sum-chev" aria-hidden="true"><use href="#i-chev-down"/></svg></summary>
-    <ul class="shop" id="shop"></ul>
-  </details>
+  <section class="panel" id="tab-week" role="tabpanel" aria-labelledby="tab-btn-week" hidden>
+    <div class="sec-head"><h2>Week at a glance</h2><span class="sec-range" id="weekRange"></span></div>
+    <div class="sec-stats" id="weekStats"></div>
+    <div class="card-grid" id="week"></div>
+  </section>
 
-  <section class="week" aria-labelledby="weekTitle">
-    <div class="week-head">
-      <h2 id="weekTitle">Week at a glance</h2>
-      <span class="week-range" id="weekRange"></span>
+  <section class="panel" id="tab-shop" role="tabpanel" aria-labelledby="tab-btn-shop" hidden>
+    <div class="sec-head"><h2>Shopping list</h2><span class="sec-range" id="shopRange"></span></div>
+    <div class="shop-mode">
+      <div class="seg seg-small" id="shopMode" role="radiogroup" aria-label="Shopping list range" style="--n:2">
+        <span class="seg-thumb" aria-hidden="true"></span>
+        <label><input type="radio" name="shopMode" value="day"><span>This day</span></label>
+        <label><input type="radio" name="shopMode" value="week"><span>Rest of week</span></label>
+      </div>
     </div>
-    <div class="week-stats" id="weekStats"></div>
-    <div class="week-grid" id="week"></div>
+    <div class="sec-stats" id="shopStats"></div>
+    <div class="card-grid" id="shop"></div>
+  </section>
+
+  <section class="panel" id="tab-water" role="tabpanel" aria-labelledby="tab-btn-water" hidden>
+    <div class="sec-head"><h2>Water &amp; tips</h2><span class="sec-range" id="waterDate"></span></div>
+    <div class="sec-stats" id="waterStats"></div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg> <span>Glasses today</span><span class="card-sub">tap to fill · goal 8</span></div>
+        <div class="water" id="water"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg> <span>This week</span><span class="card-sub" id="waterWeekSub"></span></div>
+        <div class="wbars" id="waterWeek"></div>
+      </div>
+      <div class="card tip-card">
+        <div class="card-title"><svg class="ic" aria-hidden="true"><use href="#i-bulb"/></svg> <span>Tip of the day</span></div>
+        <p id="tip"></p>
+      </div>
+    </div>
   </section>
 
   <footer>
@@ -689,10 +761,13 @@ function render() {
 
   const total = SLOTS.reduce((a, s) => ({ kcal: a.kcal + plan[s.key].kcal, p: a.p + plan[s.key].p }), { kcal: 0, p: 0 });
   const eaten = SLOTS.filter(s => done[s.key]).length;
+  const vegCount = SLOTS.filter(s => plan[s.key].veg).length;
+  $("menuDate").textContent = current.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
   $("summary").innerHTML = `
-    <div class="stat"><b>~${total.kcal}</b><span>kcal planned</span></div>
-    <div class="stat"><b>~${total.p} g</b><span>protein</span></div>
-    <div class="stat"><b>${eaten} / ${SLOTS.length}</b><span>meals eaten</span></div>`;
+    <span class="fact">${icon("check")} ${eaten}/${SLOTS.length} eaten</span>
+    <span class="fact">${icon("flame")} ~${total.kcal} kcal</span>
+    <span class="fact">${icon("protein")} ~${total.p} g protein</span>
+    <span class="fact fact-veg">${icon("leaf")} ${vegCount} veggie</span>`;
 
   // On today, highlight the first meal not yet eaten whose time hasn't passed.
   let nextKey = null;
@@ -741,22 +816,144 @@ function render() {
     if (dt.open) openHow.add(dt.dataset.how); else openHow.delete(dt.dataset.how);
   }));
 
-  $("tip").textContent = TIPS[((dayNumber(current) % TIPS.length) + TIPS.length) % TIPS.length];
-
-  const glasses = store.get("water:" + key, 0);
-  $("water").innerHTML = Array.from({ length: 8 }, (_, i) =>
-    `<button class="${i < glasses ? "on" : ""}" data-i="${i}" aria-label="Glass ${i + 1}">${icon(i < glasses ? "glass-full" : "glass")}</button>`).join("");
-  $("water").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-    const i = +b.dataset.i;
-    store.set("water:" + key, glasses === i + 1 ? i : i + 1);
-    render();
-  }));
-
-  const items = [...new Set(SLOTS.flatMap(s => plan[s.key].ing))];
-  $("shop").innerHTML = items.map(i => `<li>${esc(i)}</li>`).join("");
-
+  renderWater(key, todayKey);
+  renderShop(key, todayKey);
   renderWeek(key, todayKey);
 }
+
+// ---------- Water & tips ----------
+const WATER_GOAL = 8;
+function weekStart(d) { const m = new Date(d); m.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return m; }
+function renderWater(key, todayKey) {
+  const glasses = store.get("water:" + key, 0);
+  $("waterDate").textContent = current.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+  $("tip").textContent = TIPS[((dayNumber(current) % TIPS.length) + TIPS.length) % TIPS.length];
+
+  $("water").innerHTML = Array.from({ length: WATER_GOAL }, (_, i) =>
+    `<button class="${i < glasses ? "on" : ""}" data-i="${i}" aria-label="Glass ${i + 1}${i < glasses ? " (drunk)" : ""}">${icon(i < glasses ? "glass-full" : "glass")}</button>`).join("");
+
+  const monday = weekStart(current);
+  let sum = 0, goalDays = 0, bars = "";
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const k = isoDate(d), g = store.get("water:" + k, 0);
+    sum += g; if (g >= WATER_GOAL) goalDays++;
+    const cls = ["wbar", k === key && "sel", k === todayKey && "today", g >= WATER_GOAL && "goal"].filter(Boolean).join(" ");
+    bars += `<button class="${cls}" data-date="${k}" aria-label="${d.toLocaleDateString(undefined, { weekday: "long" })}: ${g} glasses">
+      <b>${g}</b><span class="col"><i style="height:${Math.min(1, g / WATER_GOAL) * 100}%"></i></span>
+      <span>${d.toLocaleDateString(undefined, { weekday: "narrow" })}</span></button>`;
+  }
+  $("waterWeek").innerHTML = bars;
+  $("waterWeekSub").textContent = `avg ${(sum / 7).toFixed(1)} / day`;
+  $("waterStats").innerHTML = `
+    <span class="fact">${icon("glass-full")} ${glasses}/${WATER_GOAL} glasses</span>
+    <span class="fact">${icon("drop")} ~${(glasses * 0.25).toFixed(2).replace(/\.?0+$/, "")} L</span>
+    <span class="fact${goalDays ? " fact-veg" : ""}">${icon("check")} goal met ${goalDays}/7 days</span>`;
+}
+$("water").addEventListener("click", e => {
+  const b = e.target.closest("button[data-i]"); if (!b) return;
+  const k = isoDate(current), g = store.get("water:" + k, 0), i = +b.dataset.i;
+  store.set("water:" + k, g === i + 1 ? i : i + 1);
+  render();
+});
+$("waterWeek").addEventListener("click", e => {
+  const b = e.target.closest("button[data-date]"); if (b) go(parseIso(b.dataset.date));
+});
+
+// ---------- Shopping list ----------
+let shopMode = store.get("shopMode", "day");
+if (shopMode !== "day" && shopMode !== "week") shopMode = "day";
+function shopCard(d, cardTitle, cardSub, meals, sel) {
+  const k = isoDate(d), got = store.get("shop:" + k, {});
+  let n = 0, have = 0;
+  const groups = meals.map(({ slot, meal }) => {
+    const rows = meal.ing.map((ing, i) => {
+      const id = slot.key + ":" + i, on = !!got[id];
+      n++; if (on) have++;
+      return `<li><button class="shop-item" data-date="${k}" data-id="${id}" aria-pressed="${on}">${icon(on ? "box-check" : "box")}<span>${esc(ing)}</span></button></li>`;
+    }).join("");
+    return { slot, meal, rows };
+  });
+  return { n, have, html: groups.map(g => `<div class="card${sel ? " sel" : ""}">
+      <div class="card-title">${icon(g.slot.icon)} <span>${cardTitle ? cardTitle(g) : g.slot.label}</span><span class="card-sub">${cardSub ? cardSub(g) : ""}</span></div>
+      <div class="card-meal">${esc(g.meal.name)}</div>
+      <ul class="shop-items">${g.rows}</ul></div>`).join("") };
+}
+function renderShop(key, todayKey) {
+  setSeg($("shopMode"), shopMode);
+  let n = 0, have = 0, html = "", meals = 0;
+  if (shopMode === "day") {
+    const plan = planFor(current, pref);
+    const r = shopCard(current, null, g => g.slot.time, SLOTS.map(slot => ({ slot, meal: plan[slot.key] })), false);
+    n = r.n; have = r.have; html = r.html; meals = SLOTS.length;
+    $("shopRange").textContent = current.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+  } else {
+    // From the selected day to Sunday: one card per day, all its meals' ingredients together.
+    const monday = weekStart(current);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const fmt = d => d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+    $("shopRange").textContent = `${fmt(current)} – ${fmt(sunday)}`;
+    for (let d = new Date(current); dayNumber(d) <= dayNumber(sunday); d.setDate(d.getDate() + 1)) {
+      const plan = planFor(d, pref), k = isoDate(d), got = store.get("shop:" + k, {});
+      let rows = "", dn = 0, dh = 0;
+      SLOTS.forEach(slot => plan[slot.key].ing.forEach((ing, i) => {
+        const id = slot.key + ":" + i, on = !!got[id];
+        dn++; if (on) dh++;
+        rows += `<li><button class="shop-item" data-date="${k}" data-id="${id}" aria-pressed="${on}" title="${slot.label}: ${esc(plan[slot.key].name)}">${icon(on ? "box-check" : "box")}<span>${esc(ing)}</span></button></li>`;
+      }));
+      n += dn; have += dh; meals += SLOTS.length;
+      html += `<div class="card${k === key ? " sel" : ""}">
+        <div class="card-title">${icon("calendar")} <span>${d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}</span>
+          ${k === todayKey ? `<span class="wday-tag">Today</span>` : ""}<span class="card-sub">${dh}/${dn}</span></div>
+        <ul class="shop-items">${rows}</ul></div>`;
+    }
+  }
+  $("shop").innerHTML = html;
+  $("shopStats").innerHTML = `
+    <span class="fact${have === n && n ? " fact-veg" : ""}">${icon("check")} ${have}/${n} items got</span>
+    <span class="fact">${icon("basket")} ${meals} meals</span>`;
+}
+$("shop").addEventListener("click", e => {
+  const b = e.target.closest(".shop-item"); if (!b) return;
+  const k = "shop:" + b.dataset.date, got = store.get(k, {});
+  got[b.dataset.id] = !got[b.dataset.id];
+  store.set(k, got);
+  render();
+});
+$("shopMode").addEventListener("change", e => {
+  if (e.target.name !== "shopMode") return;
+  shopMode = e.target.value; store.set("shopMode", shopMode); render();
+});
+
+// ---------- Tabs ----------
+const TABS = ["menu", "week", "shop", "water"];
+let tab = store.get("tab", "menu");
+if (TABS.indexOf(tab) === -1) tab = "menu";
+function showTab(t, scroll) {
+  tab = t; store.set("tab", t);
+  TABS.forEach(x => {
+    $("tab-" + x).hidden = x !== t;
+    const b = $("tab-btn-" + x);
+    b.setAttribute("aria-selected", x === t);
+    b.tabIndex = x === t ? 0 : -1;
+  });
+  if (scroll) {
+    // Bring the top of the section into view without jumping past the day bar.
+    const nav = document.querySelector(".daynav");
+    const top = $("tab-" + t).getBoundingClientRect().top + window.scrollY - nav.offsetHeight - 12;
+    if (window.scrollY > top) window.scrollTo({ top: Math.max(0, top) });
+  }
+}
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab, true);
+});
+$("tabs").addEventListener("keydown", e => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  e.preventDefault(); e.stopPropagation();
+  const i = (TABS.indexOf(tab) + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
+  showTab(TABS[i], true); $("tab-btn-" + TABS[i]).focus();
+});
+showTab(tab, false);
 
 // ---------- Week at a glance ----------
 function renderWeek(key, todayKey) {
@@ -809,6 +1006,7 @@ $("week").addEventListener("click", e => {
   if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
   e.preventDefault();
   go(parseIso(a.dataset.date));
+  showTab("menu");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
